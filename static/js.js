@@ -12,10 +12,12 @@ function button() {
         dataType:'text',
         data:data,
         success:function(result){
-            $('.content').text(result)
+            var res=JSON.parse(result)
+            $('.content').text(res.msg)
         },
         messageerror:function (result) {
-            $('.content').text(result)
+            var res=JSON.parse(result)
+            $('.content').text(res.msg)
         }
     });
 }

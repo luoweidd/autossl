@@ -11,10 +11,13 @@
 '''
 
 from flask import Flask,request,redirect,render_template
+from base.msgdict import msg
+import json
 
 
 app = Flask(__name__)
 
+re=msg()
 
 @app.route('/')
 def hello_world():
@@ -34,9 +37,14 @@ def sslfrom():
 
 @app.route('/applyssl',methods=['POST','GET'])
 def applyssl():
-    data = request.data
-    print data
-    return data
+    if request.method =='POST':
+        data = request.get_data()
+        result=re.getmsg(0)
+        result['msg']=data
+        return json.dumps(result)
+    else:
+        remsg=re.getmsg(10015)
+        return json.dumps(re.msg(remsg))
 
 if __name__ == '__main__':
     app.run()
