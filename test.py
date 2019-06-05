@@ -12,7 +12,7 @@
 
 
 
-from autossl.checkcertbotinstalled import certbot
+from autosslcontrolle.checkcertbotinstalled import certbot
 from base.basemethod import get_os_info
 # print get_os_info()
 ll= certbot()

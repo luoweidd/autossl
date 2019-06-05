@@ -12,8 +12,13 @@
 
 from flask import Flask,request,redirect,render_template
 from base.msgdict import msg
-import json
+from ACME.get_nonce import get_nonce
+from ACME.make_account_key import make_account_private
+import json,os
 
+get_nonce()
+if os.path.exists('_private.key') is not True:
+    make_account_private()
 
 app = Flask(__name__)
 
