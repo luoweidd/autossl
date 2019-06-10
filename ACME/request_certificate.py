@@ -26,12 +26,12 @@ import	myhelper
 
 g_debug = 0
 
-acme_path = 'https://acme-staging-v02.api.letsencrypt.org/'
+acme_path = 'https://acme-staging-v02.api.letsencrypt.org/directory'
 AccountKeyFile = 'account.key'
 AccountKeyJson = 'account.json'
 EmailAddresses = ['mailtoto:123456@qq.com,mailto:98765@qq.com']
 headers = {
-	'User-Agent': 'neoprime.io-acme-client/1.0',
+	'User-Agent': 'neoprime.io-acme-client/2.0',
 	'Accept-Language': 'en',
 	'Content-Type': 'application/jose+json'
 }
@@ -344,9 +344,64 @@ def request_certificate(config, urls, nonce, location):
 
 	return nonce, resp.text, order_location
 
+# ############################################################
+# # Main Program Function
+# ############################################################
+#
+# def main(config, debug=0):
+# 	""" Main Program Function """
+# 	acme_urls = load_acme_urls(acme_path)
+#
+# 	url = acme_urls["newAccount"]
+#
+# 	nonce = acme_get_nonce(acme_urls)
+#
+# 	if nonce is False:
+# 		sys.exit(1)
+#
+# 	nonce, account_url = get_account_url(url, nonce)
+#
+# 	# resp is the returned JSON data describing the account
+# 	nonce, resp = get_account_info(nonce, account_url, account_url)
+#
+# 	info = json.loads(resp)
+#
+# 	if debug is not 0:
+# 		print('')
+# 		print('Returned Data:')
+# 		print('##################################################')
+# 		#print(info)
+# 		helper.print_dict(info)
+# 		print('##################################################')
+#
+# 	print('')
+# 	print('ID:        ', info['id'])
+# 	print('Contact:   ', info['contact'])
+# 	print('Initial IP:', info['initialIp'])
+# 	print('Created At:', info['createdAt'])
+# 	print('Status:   ', info['status'])
+#
+# 	nonce, resp, order_location = request_certificate(config, acme_urls, nonce, account_url)
+#
+# 	print('Order Location:', order_location)
+# 	print('')
+# 	print(resp)
+#
+# 	# Save the response, the next example program will process this
+# 	# in a real program, we would process the response now
+#
+# 	print('Saving certificate request response in cert_request.data')
+# 	with open('cert_request.data', "w+") as f:
+# 		f.write(resp)
+# 	return {"nonce":nonce,"resp":resp,"order_location":order_location}
+
 ############################################################
-# Main Program Function
+# Request an SSL certificate from the ACME server
 ############################################################
+
+# acme_config = load_acme_parameters(g_debug)
+#
+# main(acme_config, g_debug)
 
 
 def cert_request_authorizations(g_debug=0):
@@ -371,7 +426,7 @@ def cert_request_authorizations(g_debug=0):
 		print('')
 		print('Returned Data:')
 		print('##################################################')
-		#print(info)
+		# print(info)
 		helper.print_dict(info)
 		print('##################################################')
 
@@ -384,48 +439,66 @@ def cert_request_authorizations(g_debug=0):
 
 	nonce, resp, order_location = request_certificate(acme_config, acme_urls, nonce, account_url)
 
-	print('Order Location:', order_location)
-	print('')
-	print(resp)
+	# print('Order Location:', order_location)
+	# print('')
+	# print(resp)
 
 	# Save the response, the next example program will process this
 	# in a real program, we would process the response now
 
-	print('Saving certificate request response in cert_request.data')
-	with open('cert_request.data', "w+") as f:
-		f.write(resp)
-	return {"nonce":nonce,"resp":resp,"order_location":order_location}
+	# print('Saving certificate request response in cert_request.data')
+	# with open('cert_request.data', "w+") as f:
+	# 	f.write(resp)
+	return {"nonce": nonce, "resp": resp, "order_location": order_location}
+
 
 ############################################################
 # Request an SSL certificate from the ACME server
 ############################################################
-	
+
 
 def authorizations_cert_request_info():
-	curl = cert_request_authorizations(g_debug)["authorizations"]
-	reps = requests.request('GET',curl)
+	urls = cert_request_authorizations(g_debug)
+	url = urls["resp"]
+	auth_url = json.loads(url)["authorizations"][0].encode('utf8')
+	reps = requests.request('GET', auth_url)
 	for authorizations_type in reps["challenges"]:
 		if authorizations_type["type"] == "dns-01":
 			return authorizations_type["token"]
 
+
 def token_challenges():
-	token=authorizations_cert_request_info()
+	token = authorizations_cert_request_info()
 	signature = myhelper.sign(token, AccountKeyFile)
 	return signature
 
-def dns_authorizations():
-	url=cert_request_authorizations(g_debug)["authorizations"]
-	nonce=acme_get_nonce()
-	location=get_account_url()
 
-	payload={}
+def dns_authorizations():
+	urls = cert_request_authorizations(g_debug)
+	url = urls["resp"]
+	auth_url=json.loads(url)["authorizations"][0].encode('utf8')
+
+	acme_urls = load_acme_urls(acme_path)
+	account_url = acme_urls["newAccount"]
+	nonce = acme_get_nonce(acme_urls)
+	location = get_account_url(account_url,nonce)
+
+	print('Calling endpoint:', auth_url)
+	get_resp = requests.get(auth_url, headers=headers)
+	challenges = json.loads(get_resp.content)["challenges"][2]
+	print(challenges)
+	challenges_url= challenges["url"]
+	challenges_token = challenges["token"]
+
+	payload = {}
 	payload_b64 = myhelper.b64(json.dumps(payload).encode("utf8"))
 
+	nonce_b = acme_get_nonce(acme_urls)
 	body_top = {
 		"alg": "RS256",
-		"kid": location,
-		"nonce": nonce,
-		"url": url
+		"kid": location[1],
+		"nonce": nonce_b,
+		"url": challenges_url
 	}
 
 	body_top_b64 = myhelper.b64(json.dumps(body_top).encode("utf8"))
@@ -441,12 +514,11 @@ def dns_authorizations():
 	jose = {
 		"protected": body_top_b64,
 		"payload": payload_b64,
-		"signature": signature
+		"signature": myhelper.b64(signature)
 	}
 
 	try:
-		print('Calling endpoint:', url)
-		resp = requests.post(url, json=jose, headers=headers)
+		resp = requests.post(auth_url,json=jose, headers=headers)
 	except requests.exceptions.RequestException as error:
 		resp = error.response
 		print(resp)
@@ -457,9 +529,15 @@ def dns_authorizations():
 		print('Error calling ACME endpoint:', resp.reason)
 		print('Status Code:', resp.status_code)
 		myhelper.process_error_message(resp.text)
-		sys.exit(1)
-
+		# sys.exit(1)
 
 	# resp.text is the returned JSON data describing the new order
 
 	return resp
+
+	def download_cert(url):
+		resp = requests.get(url)
+		return resp
+
+dns_authorizations()
+token_challenges
