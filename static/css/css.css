@@ -1,6 +1,6 @@
 
 body {
-    font-size: xx-large; width: 100%; text-align: center; margin-top: 200px
+    font-size: xx-large; width: 100%; height: auto;
 }
 
 .input-xxlarge {
@@ -14,6 +14,27 @@ body {
     margin: 0px 0px 90px -10px;
 }
 
+.input_div {
+    width: 800px; margin: auto; margin-top: 180px;
+}
+
 .content {
-    text-align: left; margin: 30px;
+    text-align: center; margin-top: 200px;
+    width: 90%;
+}
+
+.letf_form {
+    width: 20%; height: 900px; overflow-7: hidden;
+    position: fixed;
+}
+
+.right_form {
+    width: 78.5%; height: 900px; margin: 0px 0px 0px 20.5%;
+    position: fixed; overflow-y: hidden;
+}
+
+.footer {
+    text-align: center; position: fixed; width: 100%; top: 925px;
+    font-family: 'Consolas', 'Monaco', 'Bitstream Vera Sans Mono', monospace;
+    font-size: 14px;
 }

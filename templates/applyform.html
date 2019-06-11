@@ -6,13 +6,17 @@
     <link rel="stylesheet" href="static/css/css.css">
 </head>
 <body>
-    <div style="width: 800px; margin: auto">
-        输入域名：<input class="input-xxlarge" alt="abcd.com" type="text">
-        <input class="bottom" alt="提交" type="button" value="提  交" onclick="button()">
-        <div class="content">
+    <div style="width: 100%">
+        <script src="static/js/jquery-3.4.1.min.js"></script>
+        <script src="static/js/js.js"></script>
+        <iframe class="letf_form" name="right_form" scrolling="no" onload="loader()" src="/account_form_info">
 
-        </div>
+        </iframe>
+        <iframe class="right_form" name="right_form" scrolling="no" src="/apply_ssl_form">
+        </iframe>
     </div>
-    <script src="static/js.js"></script>
+    <div class="footer">
+        copyright @ lw 2019
+    </div>
 </body>
 </html>

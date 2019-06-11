@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python2
 # _*_coding:utf8_*_
 
 '''
@@ -10,11 +10,7 @@
  * Time: 上午11:37
 '''
 
+from ACME.ssl_cert_apply_v2 import ssl_cert_v2
 
-
-from autosslcontrolle.checkcertbotinstalled import certbot
-from base.basemethod import get_os_info
-# print get_os_info()
-ll= certbot()
-l=ll.backcmd()
-print l
+ssl_cert_obj=ssl_cert_v2()
+print ssl_cert_obj.get_nonce()

@@ -12,13 +12,12 @@
 
 from flask import Flask,request,redirect,render_template
 from base.msgdict import msg
-from ACME.get_nonce import get_nonce
-from ACME.make_account_key import make_account_private
-import json,os
+from ACME.ssl_cert_apply_v2 import ssl_cert_v2
+from base.mylog import loglog
+import json
 
-get_nonce()
-if os.path.exists('_private.key') is not True:
-    make_account_private()
+logs = loglog()
+log = logs.logger
 
 app = Flask(__name__)
 
@@ -50,6 +49,26 @@ def applyssl():
     else:
         remsg=re.getmsg(10015)
         return json.dumps(re.msg(remsg))
+
+@app.route('/account_form_info',methods=['GET'])
+def account_form_info():
+    return render_template('account_info_form.html')
+
+@app.route('/apply_ssl_form',methods=['GET'])
+def account_info():
+    return render_template('apply_ssl.html')
+
+@app.route('/account_info_api',methods=["GET"])
+def account_info_api():
+    ssl_accounts = ssl_cert_v2()
+    result=ssl_accounts.get_account_info()
+    if type(result) != dict:
+        remsg=re.getmsg(10012)
+        return json.dumps(re.msg(remsg))
+    else:
+        res = re.getmsg(0)
+        res['msg']=result
+        return json.dumps(res)
 
 if __name__ == '__main__':
     app.run()
