@@ -23,18 +23,41 @@ body {
     width: 90%;
 }
 
-.letf_form {
-    width: 20%; height: 900px; overflow-7: hidden;
-    position: fixed;
+#letf_form {
+    width: 20%; height: 900px; text-align: left;
+    position: fixed; overflow-x: hidden;
 }
 
 .right_form {
     width: 78.5%; height: 900px; margin: 0px 0px 0px 20.5%;
-    position: fixed; overflow-y: hidden;
+    position: fixed;
 }
 
 .footer {
     text-align: center; position: fixed; width: 100%; top: 925px;
     font-family: 'Consolas', 'Monaco', 'Bitstream Vera Sans Mono', monospace;
     font-size: 14px;
+}
+
+#letf_form_div {
+    text-align: left; font-size: 14px;
+    font-family: 'Ubuntu', 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
+}
+
+#loading {
+    width: 100%; height: 100%; position: fixed; text-align: center; z-index: 999; visibility: hidden;
+    background-color: white; opacity: 0.6;
+}
+
+#loading img {
+    margin-top: 30%
+}
+
+.account_info_tables {
+    list-style: none; text-align: left; border-collapse: collapse;
+    width: 97%; height: auto;
+}
+
+.account_info_tables td {
+     border: solid lightgrey 1px; border-collapse: collapse;
 }

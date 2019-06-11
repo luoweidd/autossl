@@ -463,3 +463,5 @@ def dns_authorizations():
 	# resp.text is the returned JSON data describing the new order
 
 	return resp
+
+cert_request_authorizations()
