@@ -10,7 +10,7 @@
  * Time: 上午11:37
 '''
 
-from ACME.ssl_cert_apply_v2 import ssl_cert_v2
-
-ssl_cert_obj=ssl_cert_v2()
-print ssl_cert_obj.get_nonce()
+# from ACME.ssl_cert_apply_v2 import ssl_cert_v2
+#
+# ssl_cert_obj=ssl_cert_v2()
+# print ssl_cert_obj.get_nonce()
