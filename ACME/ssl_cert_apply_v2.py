@@ -244,34 +244,37 @@ class ssl_cert_v2:
             info = json.loads(resp)
             return info
 
-    def new_order(self,csrfile):
+    def new_order(self,domains):
         """ Request an SSL certificate from the ACME server """
         accounts=self.get_account_url()
-        domains = myhelper.get_domains_from_csr(csrfile)
+        # domains = myhelper.get_domains_from_csr(csrfile)
         # Create the account request
-        self.log.info("Request to the ACME server an order to validate domains.")
-        payload = {"identifiers": [{"type": "dns", "value": domain} for domain in domains]}
-        body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": accounts[1]}
-        jose = self.data_packaging(payload,body_top)
-        # Make the ACME request
-        try:
-            resp = requests.post(accounts[1], json=jose, headers=self.headers)
-        except requests.exceptions.RequestException as error:
-            resp = error.response
-            self.log.error(resp)
-        except Exception as error:
-            self.log.error(error)
+        if type(domains) == list or type(domains) == tuple or type(domains):
+            self.log.info("Request to the ACME server an order to validate domains.")
+            payload = {"identifiers": [{"type": "dns", "value": domain} for domain in domains]}
+            body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": accounts[1]}
+            jose = self.data_packaging(payload,body_top)
+            # Make the ACME request
+            try:
+                resp = requests.post(self.base_path, json=jose, headers=self.headers)
+            except requests.exceptions.RequestException as error:
+                resp = error.response
+                self.log.error(resp)
+            except Exception as error:
+                self.log.error(error)
 
-        if resp.status_code < 200 or resp.status_code >= 300:
-            self.log.error('Error calling ACME endpoint:%s'%resp.reason)
-            self.log.error('Status Code:%s'%resp.status_code)
-            return "System error, please contact the system administrator!"
+            if resp.status_code < 200 or resp.status_code >= 300:
+                self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+                self.log.error('Status Code:%s'%resp.status_code)
+                return "System error, please contact the system administrator!"
+            else:
+                nonce = resp.headers[self.nonec]
+                if resp.status_code == 201:
+                    order_location = resp.headers['Location']
+                    return nonce,order_location
+                return nonce,resp
         else:
-            nonce = resp.headers[self.nonec]
-            if resp.status_code == 201:
-                order_location = resp.headers['Location']
-                return nonce,order_location
-            return nonce,resp
+            return 'The type of domains must be "List" or "tuple".'
 
     def new_authz(self):
         pass

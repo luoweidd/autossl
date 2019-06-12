@@ -12,18 +12,18 @@ function button() {
         dataType:'text',
         data:data,
         beforeSend:function(){
-            var load = $("#loading")
+            var load = $("#loading_1")
             load[0].style.visibility="visible"
             $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
             },
         success:function(result){
-            var load = $("#loading")
+            var load = $("#loading_1")
             load[0].style.visibility="hidden";
             var res=JSON.parse(result)
             $('.content').text(res.msg)
         },
         messageerror:function (result) {
-            var load = $("#loading")
+            var load = $("#loading_1")
             load[0].style.visibility="hidden";
             var res=JSON.parse(result)
             $('.content').text(res.msg)

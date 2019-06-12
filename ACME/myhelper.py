@@ -215,17 +215,47 @@ def create_rsa_private_key(filename):
 
 	return True
 
-def make_certificate_key(domainname):
-    filename = '*./%s/%s.key'%(domainname,domainname)
+
+def create_csr(csr_pkey, domain_name, email_address):
+	""" Generate a certificate signing request """
+
+	# create certifcate request
+	cert = OpenSSL.crypto.X509Req()
+	cert.get_subject().emailAddress = email_address
+	cert.get_subject().CN = domain_name
+
+	key_usage = [b"Digital Signature", b"Non Repudiation", b"Key Encipherment"]
+
+	san_list = ["DNS:" + domain_name]
+
+	cert.add_extensions([
+		OpenSSL.crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
+		OpenSSL.crypto.X509Extension(b"keyUsage", False, b",".join(key_usage)),
+		OpenSSL.crypto.X509Extension(b"subjectAltName", False, ", ".join(san_list).encode("utf-8"))
+	])
+
+	cert.set_pubkey(csr_pkey)
+	cert.sign(csr_pkey, 'sha256')
+
+	return cert
+
+
+def make_csrfile(domain_name, email_address):
+	data = open(KEY_FILE, 'rt').read()
+
+	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
+
+	csr_cert = create_csr(csr_pkey, domain_name, email_address)
+
+	with open(CSR_FILE, 'wt') as f:
+		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
+		f.write(data.decode('utf-8'))
+
+def make_certificate_key(domain_name):
+    filename = '%s/%s.key'%(domain_name,domain_name)
     key = RSA.generate(4096)
-    if not os.path.exists(domainname):
-        os.makedirs('*./%s'%domainname,mode=0775)
+    if not os.path.exists(domain_name):
+        os.makedirs('%s'%domain_name,mode=0775)
     with open(filename,'w') as f:
         f.write(key.exportKey().decode('utf-8'))
 
-def load_acme_config(filename='acme.ini'):
-	config = configparser.ConfigParser()
-
-	config.read(filename)
-
-	return config

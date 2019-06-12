@@ -43,8 +43,10 @@ def sslfrom():
 def applyssl():
     if request.method =='POST':
         data = request.get_data()
+        ssl_Cert = ssl_cert_v2()
+        order = ssl_Cert.new_order(data)
         result=re.getmsg(0)
-        result['msg']=data
+        result['msg']=order
         return json.dumps(result)
     else:
         remsg=re.getmsg(10015)
