@@ -55,7 +55,7 @@ def account_form_info():
     return render_template('account_info_form.html')
 
 @app.route('/apply_ssl_form',methods=['GET'])
-def account_info():
+def apply_ssl_form():
     return render_template('apply_ssl.html')
 
 @app.route('/account_info_api',methods=["GET"])

@@ -28,7 +28,7 @@ class ssl_cert_v2:
     headers = {
         'User-Agent': 'lw-ghy-acme-client/1.0',
         'Accept-Language': 'zh',
-        'Content-Type':"application/jose + json"
+        'Content-Type':"application/jose+json"
     }
 
     #new resources path
@@ -148,11 +148,12 @@ class ssl_cert_v2:
 
         if resp.status_code < 200 or resp.status_code >= 300:
             print resp.reason
-            self.log.error('Error calling ACME endpoint:', resp.reason)
-            self.log.error('Status Code:', resp.status_code)
+            self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+            self.log.error('Status Code:%s'%resp.status_code)
         else:
             if 'Location' in resp.headers:
-                self.log.info('Account URL:', resp.headers['Location'])
+                print
+                self.log.info('Account URL:%s'%resp.headers['Location'])
                 nonce = resp.headers[self.nonec]
                 account_url = resp.headers['Location']
                 return nonce, account_url
@@ -180,11 +181,14 @@ class ssl_cert_v2:
                 self.log.error(error)
 
             if resp.status_code < 200 or resp.status_code >= 300:
-                self.log.error('Error calling ACME endpoint:', resp.reason)
-                self.log.error('Status Code:', resp.status_code)
+                self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+                self.log.error('Status Code:%s'%resp.status_code)
                 return "System error, please contact the system administrator!"
             else:
-                info = json.dumps(resp)
+                info = json.loads(resp.text)
+                info["url"]=resp.url
+                nonce = resp.headers[self.nonec]
+                info["nonce"] = nonce
                 return info
         else:
             return "System error, please contact the system administrator!"
@@ -210,7 +214,7 @@ class ssl_cert_v2:
 
         if resp.status_code < 200 or resp.status_code >= 300:
             self.log.error('Error calling ACME endpoint:', resp.reason)
-            self.log.error('Status Code:', resp.status_code)
+            self.log.error('Status Code:%s'%resp.status_code)
             return "System error, please contact the system administrator!"
         else:
             info = json.loads(resp)
@@ -233,8 +237,8 @@ class ssl_cert_v2:
         except Exception as error:
             self.log.error(error)
         if resp.status_code < 200 or resp.status_code >= 300:
-            self.log.error('Error calling ACME endpoint:', resp.reason)
-            self.log.error('Status Code:', resp.status_code)
+            self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+            self.log.error('Status Code:%s'%resp.status_code)
             return "System error, please contact the system administrator!"
         else:
             info = json.loads(resp)
@@ -259,8 +263,8 @@ class ssl_cert_v2:
             self.log.error(error)
 
         if resp.status_code < 200 or resp.status_code >= 300:
-            self.log.error('Error calling ACME endpoint:', resp.reason)
-            self.log.error('Status Code:', resp.status_code)
+            self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+            self.log.error('Status Code:%s'%resp.status_code)
             return "System error, please contact the system administrator!"
         else:
             nonce = resp.headers[self.nonec]

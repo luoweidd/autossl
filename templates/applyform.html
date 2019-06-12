@@ -5,15 +5,18 @@
     <title>申请SSL证书</title>
     <link rel="stylesheet" href="static/css/css.css">
 </head>
-<body>
+<body style="overflow-x: hidden;">
     <div style="width: 100%">
         <script src="static/js/jquery-3.4.1.min.js"></script>
         <script src="static/js/js.js"></script>
-        <iframe class="letf_form" name="right_form" scrolling="no" onload="loader()" src="/account_form_info">
+        <iframe id="letf_form" name="right_form" onload="loader()" src="/account_form_info">
 
         </iframe>
-        <iframe class="right_form" name="right_form" scrolling="no" src="/apply_ssl_form">
+        <iframe class="right_form" name="right_form" src="/apply_ssl_form">
         </iframe>
+    </div>
+    <div id="loading">
+
     </div>
     <div class="footer">
         copyright @ lw 2019
