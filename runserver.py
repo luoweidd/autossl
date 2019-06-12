@@ -44,10 +44,18 @@ def applyssl():
     if request.method =='POST':
         data = request.get_data()
         ssl_Cert = ssl_cert_v2()
-        order = ssl_Cert.new_order(data)
-        result=re.getmsg(0)
-        result['msg']=order
-        return json.dumps(result)
+        domains = [data]
+        order = ssl_Cert.new_order(domains)
+        get_auth = ssl_Cert.get_auth(order)
+        challenges = ssl_Cert.get_challenges(get_auth)
+        get_dns_auth = ssl_Cert.dns_auth(challenges)
+        if order != None:
+            result=re.getmsg(0)
+            result['msg']=get_dns_auth
+            return json.dumps(result)
+        else:
+            remsg = re.getmsg(10015)
+            return json.dumps(re.msg(remsg))
     else:
         remsg=re.getmsg(10015)
         return json.dumps(re.msg(remsg))

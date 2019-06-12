@@ -35,7 +35,7 @@ class ssl_cert_v2:
     nonec_path="newNonce"
     nonec="Replay-Nonce"
     account_path="newAccount"
-    order_path="newNonce"
+    order_path="newOrder"
     Authz_path="newAuthz"
     revokeCert="revokeCert"
     keyChange="keyChange"
@@ -246,23 +246,24 @@ class ssl_cert_v2:
 
     def new_order(self,domains):
         """ Request an SSL certificate from the ACME server """
-        accounts=self.get_account_url()
         # domains = myhelper.get_domains_from_csr(csrfile)
         # Create the account request
-        if type(domains) == list or type(domains) == tuple or type(domains):
+        if type(domains) == list or type(domains) == tuple:
+            accounts = self.get_account_url()
+            dir = self.get_directory()
+            order_url = dir[self.order_path]
             self.log.info("Request to the ACME server an order to validate domains.")
             payload = {"identifiers": [{"type": "dns", "value": domain} for domain in domains]}
-            body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": accounts[1]}
+            body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": dir[self.order_path]}
             jose = self.data_packaging(payload,body_top)
             # Make the ACME request
             try:
-                resp = requests.post(self.base_path, json=jose, headers=self.headers)
+                resp = requests.post(order_url, json=jose, headers=self.headers)
             except requests.exceptions.RequestException as error:
                 resp = error.response
                 self.log.error(resp)
             except Exception as error:
                 self.log.error(error)
-
             if resp.status_code < 200 or resp.status_code >= 300:
                 self.log.error('Error calling ACME endpoint:%s'%resp.reason)
                 self.log.error('Status Code:%s'%resp.status_code)
@@ -271,13 +272,55 @@ class ssl_cert_v2:
                 nonce = resp.headers[self.nonec]
                 if resp.status_code == 201:
                     order_location = resp.headers['Location']
-                    return nonce,order_location
-                return nonce,resp
-        else:
-            return 'The type of domains must be "List" or "tuple".'
+                    return order_location
+        self.log.error( 'The type of domains must be "List" or "tuple".')
+        return None
 
-    def new_authz(self):
+    def get_auth(self,order_info):
+        if order_info != None:
+            try:
+                resp = requests.get(order_info, headers=self.headers)
+            except requests.exceptions.RequestException as error:
+                resp = error.response
+                self.log.error(resp)
+            except Exception as error:
+                self.log.error(error)
+            if resp.status_code < 200 or resp.status_code >= 300:
+                self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+                self.log.error('Status Code:%s'%resp.status_code)
+                self.log.error("System error, please contact the system administrator!")
+            else:
+                get_auth = json.loads(resp.text)
+                if get_auth["authorizations"]:
+                    challenges = get_auth["authorizations"]
+                    return challenges
+                self.log.error("challenges not found")
+                return None
+        self.log.error("System error, please contact the system administrator!")
+        return None
+
+    def get_challenges(self,auth_link):
+        try:
+            resp = requests.post(auth_link, headers=self.headers)
+        except requests.exceptions.RequestException as error:
+            resp = error.response
+            self.log.error(resp)
+        except Exception as error:
+            self.log.error(error)
+        if resp.status_code < 200 or resp.status_code >= 300:
+            self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+            self.log.error('Status Code:%s'%resp.status_code)
+            return "System error, please contact the system administrator!"
+        get_challenges = json.loads(resp.text)
+        if get_challenges["challenges"]:
+            challenges = get_challenges["challenges"]
+            return challenges
+        self.log.error("challenges not found")
+        return None
+
+    def dns_auth(self,challenges):
         pass
+
     def revokecert(self):
         pass
     def keychange(self):

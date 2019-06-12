@@ -19,7 +19,7 @@ body {
 }
 
 .content {
-    text-align: center; margin-top: 200px;
+    text-align: left; margin-top: 100px;
     width: 90%;
 }
 
@@ -55,7 +55,7 @@ body {
 }
 
 #loading img {
-    margin-top: 30%
+    margin-top: 25%
 }
 
 .account_info_tables {
