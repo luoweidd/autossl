@@ -47,9 +47,8 @@ def applyssl():
         domains = [data]
         order = ssl_Cert.new_order(domains)
         get_auth = ssl_Cert.get_auth(order)
-        challenges = ssl_Cert.get_challenges(get_auth)
-        get_dns_auth = ssl_Cert.dns_auth(challenges)
-        if order != None:
+        get_dns_auth = ssl_Cert.dns_auth(get_auth)
+        if get_dns_auth != None:
             result=re.getmsg(0)
             result['msg']=get_dns_auth
             return json.dumps(result)

@@ -57,18 +57,19 @@ function loader() {
 }
 
 function MsgAnalysis(msg) {
-    var li="<table class='account_info_tables'>"
+    var li="<table class='account_info_tables'><H3>account infomation:</H3>"
     var liend="</table>"
     for (var i in msg){
-        if (i == 'key'){
-            for (var j in msg[i]){
-                var text = "<tr><td>"+j+"</td><td style='word-break: break-all;'>"+msg[i][j]+"</td></tr>"
-            }
+        if (i == 'key' || i == 'nonce'){
+            continue;
+        //     for (var j in msg[i]){
+        //         var text = "<tr><td>"+j+"</td><td style='word-break: break-all;'>"+msg[i][j]+"</td></tr>"
+        //     }
         }
-        else
-            text = "<tr><td>"+i+"</td><td style='word-break: break-all;'>"+msg[i]+"</td></tr>"
-        var txt=li+=text
+        // else
+        text = "<tr><td>"+i+"</td><td style='word-break: break-all;'>"+msg[i]+"</td></tr>";
+        var txt=li+=text;
     }
-    var result=txt+liend
-    return result
+    var result=txt+liend;
+    return result;
 }

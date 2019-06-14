@@ -18,6 +18,7 @@ import	OpenSSL
 import  logging
 from Crypto.Util.asn1 import DerSequence
 from Crypto.PublicKey import RSA
+from Crypto.Hash.SHA256 import SHA256Hash
 
 log=logging.getLogger('"lw-ghy-acme"')
 
@@ -185,6 +186,16 @@ def get_jwk(file):
 	except Exception as e:
 		return None
 
+def JWK_Thumbprint(key_dict):
+	'''
+	Computing the input parameter object has-256 digest
+	:param key_dict: Arbitrarily object
+	:return: has-256 digest
+	'''
+	key_json = json.dumps(key_dict,separators=(',',':')).encode("utf8")
+	hash_265 = SHA256Hash(key_json).digest()
+	return hash_265
+
 def sign(data, keyfile):
 	try:
 		""" Create the ACME API Signature """
@@ -240,16 +251,16 @@ def create_csr(csr_pkey, domain_name, email_address):
 	return cert
 
 
-def make_csrfile(domain_name, email_address):
-	data = open(KEY_FILE, 'rt').read()
-
-	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
-
-	csr_cert = create_csr(csr_pkey, domain_name, email_address)
-
-	with open(CSR_FILE, 'wt') as f:
-		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
-		f.write(data.decode('utf-8'))
+# def make_csrfile(domain_name, email_address):
+# 	data = open(KEY_FILE, 'rt').read()
+#
+# 	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
+#
+# 	csr_cert = create_csr(csr_pkey, domain_name, email_address)
+#
+# 	with open(CSR_FILE, 'wt') as f:
+# 		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
+# 		f.write(data.decode('utf-8'))
 
 def make_certificate_key(domain_name):
     filename = '%s/%s.key'%(domain_name,domain_name)

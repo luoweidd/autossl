@@ -78,10 +78,6 @@ class ssl_cert_v2:
 
         return True
 
-    def make_account_private_key(self):
-        filename = '_private.key'
-        myhelper.create_rsa_private_key(filename)
-
     def data_packaging(self,payload,body_top):
         payload_b64 = myhelper.b64(json.dumps(payload).encode("utf8"))
         body_top_b64 = myhelper.b64(json.dumps(body_top).encode("utf8"))
@@ -283,42 +279,98 @@ class ssl_cert_v2:
             except requests.exceptions.RequestException as error:
                 resp = error.response
                 self.log.error(resp)
+                return  None
             except Exception as error:
                 self.log.error(error)
+                return None
             if resp.status_code < 200 or resp.status_code >= 300:
                 self.log.error('Error calling ACME endpoint:%s'%resp.reason)
                 self.log.error('Status Code:%s'%resp.status_code)
                 self.log.error("System error, please contact the system administrator!")
             else:
                 get_auth = json.loads(resp.text)
-                if get_auth["authorizations"]:
-                    challenges = get_auth["authorizations"]
-                    return challenges
-                self.log.error("challenges not found")
-                return None
+                return get_auth
         self.log.error("System error, please contact the system administrator!")
         return None
 
     def get_challenges(self,auth_link):
         try:
-            resp = requests.post(auth_link, headers=self.headers)
+            resp = requests.get(auth_link[0], headers=self.headers)
         except requests.exceptions.RequestException as error:
             resp = error.response
             self.log.error(resp)
+            return None
         except Exception as error:
             self.log.error(error)
+            return None
         if resp.status_code < 200 or resp.status_code >= 300:
             self.log.error('Error calling ACME endpoint:%s'%resp.reason)
             self.log.error('Status Code:%s'%resp.status_code)
             return "System error, please contact the system administrator!"
         get_challenges = json.loads(resp.text)
-        if get_challenges["challenges"]:
-            challenges = get_challenges["challenges"]
-            return challenges
-        self.log.error("challenges not found")
+        return get_challenges
+
+    def join_Char(self,one,two):
+        return "{0}.{1}".format(one, two)
+
+    def dns_auth(self,auth_info):
+        LABLE = "_acem_challenge"
+        challenge = self.get_challenges(auth_info["authorizations"])
+        if challenge != None and challenge["identifier"] and challenge["challenges"]:
+            domain_name = challenge["identifier"]["value"]
+            token=challenge["challenges"][0]["token"]
+            new_accuount = self.get_directory()
+            nonce = self.get_nonce(new_accuount[self.nonec_path])
+            payload = {}
+            account_key = myhelper.get_jwk(self.AccountKeyFile)
+            keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
+            body_top = {"alg": "RS256","jws": keyAuthorization,"url": challenge["challenges"][0]["url"],"nonce": nonce}
+            jose = self.data_packaging(payload,body_top)
+            try:
+                resp = requests.post(challenge["challenges"][0]["url"],json=jose,headers=self.headers)
+            except requests.exceptions.RequestException as error:
+                resp = error.response
+                self.log.error(resp)
+                return None
+            except Exception as error:
+                self.log.error(error)
+                return None
+            if resp.status_code < 200 or resp.status_code >= 300:
+                self.log.error('Error calling ACME endpoint:%s' % resp.reason)
+                self.log.error('Status Code:%s' % resp.status_code)
+                return "System error, please contact the system administrator!"
+            get_challenges = json.loads(resp.text)
+            return get_challenges
+            name = self.join_Char(LABLE, domain_name)
+            return "DNS parse name: %s type: TXT value: _ "%(name)
+        self.log.error("[Error]: DNS auth error, data request exception.")
         return None
 
-    def dns_auth(self,challenges):
+    def dns_validation_challenge(self,auth_link):
+        new_accuount = self.get_directory()
+        accuount_url = new_accuount[self.account_path]
+        nonce = self.get_nonce(new_accuount[self.nonec_path])
+        payload = {}
+        body_top = {"alg": "RS256","kid": accuount_url[1],"url": auth_link,"nonce": nonce}
+        jose = self.data_packaging(payload,body_top)
+        try:
+            self.log.info('Calling endpoint:', auth_link)
+            resp = requests.post(auth_link, json=jose, headers=self.headers)
+        except requests.exceptions.RequestException as error:
+            resp = error.response
+            self.log.error(resp)
+        except Exception as ex:
+            self.log.error(ex)
+        except BaseException as ex:
+            self.log.error(ex)
+        if resp.status_code < 200 or resp.status_code >= 300:
+            self.log.info('Error calling ACME endpoint:', resp.reason)
+            self.log.error('Status Code:', resp.status_code)
+            return json.loads(resp.text)
+        self.log.error('Error: Response headers did not contain the header "Location"')
+        return "System error, please contact the system administrator!"
+
+    def get_cert(self):
         pass
 
     def revokecert(self):
