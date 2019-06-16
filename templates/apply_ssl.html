@@ -10,10 +10,13 @@
         <script src="static/js/js.js"></script>
         <div class="input_div">
         输入域名：<input class="input-xxlarge" alt="abcd.com" type="text">
-        <input class="bottom" alt="提交" type="button" value="提  交" onclick="button()">
+        <input class="bottom" alt="提交" type="button" value="提  交" onclick="submit_apply()">
         <div class="content">
 
+        </div><input id="dns_validation" style="visibility:hidden; float: right" type="button" alt="验证" value="验  证" onclick="dns_validation()">
         </div>
+        <div class="validation_res">
+
         </div>
         <div id="loading_1">
 

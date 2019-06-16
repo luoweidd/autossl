@@ -25,15 +25,7 @@ re=msg()
 
 @app.route('/')
 def hello_world():
-    return '''你走错了，这里什么也没有！<br>
-            你以为这里是此地无银三百两么，别这么向了，此地无银三百两，黄“精”却有五百两！<br/>
-            放心吧这就是一个测试服务地址而已…… <br>
-            <img class="currentImg" id="currentImg"  onload="alog &amp;&amp; 
-            alog('speed.set', 'c_firstPageComplete', +new Date); alog.fire &amp;&amp; alog.fire('mark');" 
-            src="https://timgsa.baidu.com/timg?image&amp;quality=80&amp;size=b9999_10000&amp;sec=1559555190391&amp;
-            di=12efd2602cc4cc34fab88952e16b30ae&amp;imgtype=0&amp;src=http%3A%2F%2Fimg.mp.itc.cn%2Fupload%2F20170518%2F8e54925342144841a82058a7d825c07a.jpg" 
-            width="295" height="210" style="top: 320px; left: 256px; width: 1000px; height: 610px; cursor: pointer;" log-rightclick="p=5.102" title="点击查看源网页">
-            '''
+    return render_template('index.html')
 
 @app.route('/applysslfrom')
 def sslfrom():
@@ -78,6 +70,45 @@ def account_info_api():
         res = re.getmsg(0)
         res['msg']=result
         return json.dumps(res)
+
+@app.route('/account_order',methods=["GET"])
+def account_order():
+    ssl_cert_obj = ssl_cert_v2()
+    account_orders = ssl_cert_obj.old_order()
+    return account_orders
+
+@app.route('/dns_validation',methods=["POST"])
+def dns_validation():
+    if request.method =='POST':
+        data = request.get_data()
+        domains = [data]
+        ssl_v2 = ssl_cert_v2()
+        order = ssl_v2.old_order()
+        if order != None:
+            auth = ssl_v2.get_auth(order)
+            validation_result = ssl_v2.dns_validation(auth)
+            if validation_result is True:
+                cert = ssl_v2.get_cert()
+                '''
+                补齐nginx配置文件修改，并重启nginx服务，使配置生效。需做判断如出现配置错误回滚配置，并返回提示！
+                '''
+                nginx_status = ''
+                if nginx_status != None:
+                    result = re.getmsg(0)
+                    result['msg'] = nginx_status
+                    return json.dumps(result)
+                else:
+                    remsg = re.getmsg(10015)
+                    return json.dumps(re.msg(remsg))
+    else:
+        remsg = re.getmsg(10015)
+        return json.dumps(re.msg(remsg))
+
+@app.route('/forget_password',methods=["POST","GET"])
+def forget_password():
+    return render_template('forget_password.html')
+
+
 
 if __name__ == '__main__':
     app.run()

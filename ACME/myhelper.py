@@ -196,6 +196,15 @@ def JWK_Thumbprint(key_dict):
 	hash_265 = SHA256Hash(key_json).digest()
 	return hash_265
 
+def hash_256_digest(value):
+	'''
+	Hash256 digest for calculating a string value
+	:param value:String <type:string>
+	:return: hash256 digest
+	'''
+	digest = SHA256Hash(value).digest()
+	return digest
+
 def sign(data, keyfile):
 	try:
 		""" Create the ACME API Signature """

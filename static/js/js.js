@@ -1,10 +1,17 @@
-// var newscript = document.createElement('script');
-// newscript.setAttribute('type','text/javascript');
-// newscript.setAttribute('src','static/js/jquery-3.4.1.min.js');
-// var head = document.getElementsByTagName('head')[0];
-// head.appendChild(newscript);
+var newscript = document.createElement('script');
+newscript.setAttribute('type','text/javascript');
+newscript.setAttribute('src','static/js/jquery-3.4.1.min.js');
+newscript.setAttribute('src','static/js/jquery.md5.js')
+var head = document.getElementsByTagName('head')[0];
+head.appendChild(newscript);
 
-function button() {
+function loading_c() {
+    var load = $("#loading")
+    load[0].style.visibility="visible"
+    $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+}
+
+function submit_apply() {
     var data=$('.input-xxlarge').val();
     $.ajax({
         url:"/applyssl",
@@ -14,19 +21,49 @@ function button() {
         beforeSend:function(){
             var load = $("#loading_1")
             load[0].style.visibility="visible"
-            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+            $("#loading_1").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
             },
         success:function(result){
             var load = $("#loading_1")
             load[0].style.visibility="hidden";
             var res=JSON.parse(result)
             $('.content').text(res.msg)
+            var validation = $("#dns_validation")
+            validation[0].style.visibility="visible"
         },
         messageerror:function (result) {
             var load = $("#loading_1")
             load[0].style.visibility="hidden";
             var res=JSON.parse(result)
             $('.content').text(res.msg)
+        }
+    });
+}
+
+function dns_validation() {
+        var data=$('.input-xxlarge').val();
+    $.ajax({
+        url:"/dns_validation",
+        type:'POST',
+        dataType:'text',
+        data:data,
+        // beforeSend:function(){
+        //     var load = $("#loading_1")
+        //     load[0].style.visibility="visible"
+        //     $("#loading_1").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+        //
+        //     },
+        success:function(result){
+            // var load = $("#loading_1")
+            // load[0].style.visibility="hidden";
+            var res=JSON.parse(result)
+            $('.validation_res').text(res.msg)
+        },
+        messageerror:function (result) {
+            var load = $("#loading_1")
+            load[0].style.visibility="hidden";
+            var res=JSON.parse(result)
+            $('.validation_res').text(res.msg)
         }
     });
 }
@@ -72,4 +109,58 @@ function MsgAnalysis(msg) {
     }
     var result=txt+liend;
     return result;
+}
+
+function login() {
+    var user= $("#user").text.toString();
+    var passwd=$("#passwd").text.toString();
+    var date = {"user":user,"passwd":$.md5(passwd)};
+    $.ajax({
+        url:"/login",
+        type:'POST',
+        date:date,
+        dataType:'json',
+        beforeSend:function(){
+
+            },
+        success:function(result){
+            var load = $("#loading")
+            load[0].style.visibility="hidden";
+            var res=JSON.parse(result);
+            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+        },
+        messageerror:function (result) {
+            var load = $("#loading")
+            load[0].style.visibility="hidden";
+            var res=JSON.parse(result)
+            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+        }
+    });
+}
+
+function forget_password() {
+    var user= $("#user").text.toString();
+    var passwd=$("#passwd").text.toString()
+    $.ajax({
+        url:"/forget_password",
+        type:'POST',
+        dataType:'json',
+        beforeSend:function(){
+            var load = $("#loading")
+            load[0].style.visibility="visible"
+            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+            },
+        success:function(result){
+            var load = $("#loading")
+            load[0].style.visibility="hidden";
+            var res=JSON.parse(result);
+            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+        },
+        messageerror:function (result) {
+            var load = $("#loading")
+            load[0].style.visibility="hidden";
+            var res=JSON.parse(result)
+            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+        }
+    });
 }

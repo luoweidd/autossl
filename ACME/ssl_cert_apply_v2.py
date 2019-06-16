@@ -36,6 +36,8 @@ class ssl_cert_v2:
     nonec="Replay-Nonce"
     account_path="newAccount"
     order_path="newOrder"
+    account_order = 'https://acme-staging-v02.api.letsencrypt.org/acme/directory>;rel="index"'
+    # old_order = 'orders?cursor=2>,rel="next"'
     Authz_path="newAuthz"
     revokeCert="revokeCert"
     keyChange="keyChange"
@@ -272,6 +274,30 @@ class ssl_cert_v2:
         self.log.error( 'The type of domains must be "List" or "tuple".')
         return None
 
+    def old_order(self):
+        accounts = self.get_account_url()
+        self.log.info("Request to the ACME server an order to validate domains.")
+        order_url = 'https://acme-staging-v02.api.letsencrypt.org/acme/acct/1/orders'
+        Aid = int(accounts[1].split('/')[len(accounts[1].split('/'))-1])
+        payload = {}
+        body_top = {"alg": "RS256", "kid": accounts[1], "nonce": accounts[0], "url": order_url,"id":Aid}
+        jose = self.data_packaging(payload, body_top)
+        self.log.info("Request URL:%s"%order_url)
+        try:
+            resp = requests.post(order_url,json=jose,headers=self.headers)
+        except requests.exceptions.RequestException as error:
+            resp = error.response
+            self.log.error(resp)
+            return error
+        except Exception as error:
+            self.log.error(error)
+            return error
+        if resp.status_code < 200 or resp.status_code >= 300:
+            self.log.error('Error calling ACME endpoint:%s' % resp.reason)
+            self.log.error('Status Code:%s' % resp.status_code)
+            return "System error, please contact the system administrator!"
+        return resp
+
     def get_auth(self,order_info):
         if order_info != None:
             try:
@@ -323,8 +349,9 @@ class ssl_cert_v2:
             nonce = self.get_nonce(new_accuount[self.nonec_path])
             payload = {}
             account_key = myhelper.get_jwk(self.AccountKeyFile)
+            account_url = self.get_account_url()[1]
             keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
-            body_top = {"alg": "RS256","jws": keyAuthorization,"url": challenge["challenges"][0]["url"],"nonce": nonce}
+            body_top = {"alg": "RS256","kid":account_url,"url": challenge["challenges"][0]["url"],"nonce": nonce}
             jose = self.data_packaging(payload,body_top)
             try:
                 resp = requests.post(challenge["challenges"][0]["url"],json=jose,headers=self.headers)
@@ -338,37 +365,36 @@ class ssl_cert_v2:
             if resp.status_code < 200 or resp.status_code >= 300:
                 self.log.error('Error calling ACME endpoint:%s' % resp.reason)
                 self.log.error('Status Code:%s' % resp.status_code)
+                self.log.error("[ERROR] All info: %s"%json.dumps(resp.text))
                 return "System error, please contact the system administrator!"
-            get_challenges = json.loads(resp.text)
-            return get_challenges
+            TXT = myhelper.b64(myhelper.hash_256_digest(keyAuthorization))
             name = self.join_Char(LABLE, domain_name)
-            return "DNS parse name: %s type: TXT value: _ "%(name)
+            return "DNS parse name: %s type: TXT value: %s "%(name,TXT)
         self.log.error("[Error]: DNS auth error, data request exception.")
         return None
 
-    def dns_validation_challenge(self,auth_link):
+    def dns_validation(self,auth):
         new_accuount = self.get_directory()
-        accuount_url = new_accuount[self.account_path]
         nonce = self.get_nonce(new_accuount[self.nonec_path])
         payload = {}
-        body_top = {"alg": "RS256","kid": accuount_url[1],"url": auth_link,"nonce": nonce}
+        account_url = self.get_account_url()[1]
+        body_top = {"alg": "RS256","kid":account_url,"url": auth["authorizations"],"nonce": nonce}
         jose = self.data_packaging(payload,body_top)
         try:
-            self.log.info('Calling endpoint:', auth_link)
-            resp = requests.post(auth_link, json=jose, headers=self.headers)
+            resp = requests.post(auth["authorizations"],json=jose,headers=self.headers)
         except requests.exceptions.RequestException as error:
             resp = error.response
             self.log.error(resp)
-        except Exception as ex:
-            self.log.error(ex)
-        except BaseException as ex:
-            self.log.error(ex)
+            return None
+        except Exception as error:
+            self.log.error(error)
+            return None
         if resp.status_code < 200 or resp.status_code >= 300:
-            self.log.info('Error calling ACME endpoint:', resp.reason)
-            self.log.error('Status Code:', resp.status_code)
-            return json.loads(resp.text)
-        self.log.error('Error: Response headers did not contain the header "Location"')
-        return "System error, please contact the system administrator!"
+            self.log.error('Error calling ACME endpoint:%s' % resp.reason)
+            self.log.error('Status Code:%s' % resp.status_code)
+            self.log.error("[ERROR] All info: %s"%json.dumps(resp.text))
+            return "System error, please contact the system administrator!"
+        return json.loads(resp.text)
 
     def get_cert(self):
         pass

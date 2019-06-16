@@ -1,4 +1,11 @@
-
+/*''''
+ * Created with IntelliJ Pycharm.
+ * Description:
+ * Author <a href="mailto:3245554@qq.com">罗卫</a>
+ * User: devops
+ * Date: 2019-06-03
+ * Time: 下午2:01
+'''*/
 body {
     font-size: xx-large; width: 100%; height: auto;
 }
@@ -19,8 +26,13 @@ body {
 }
 
 .content {
-    text-align: left; margin-top: 100px;
-    width: 90%;
+    text-align: left; margin-top: 60px;
+    width: 100%; font-size: 14px;
+}
+
+.validation_res {
+    text-align: left; margin-top: 10px;
+    width: 100%; font-size: 14px;
 }
 
 #letf_form {
@@ -45,16 +57,22 @@ body {
 }
 
 #loading_1 {
-    width: 100%; height: 100%; position: fixed; text-align: center; z-index: 999; visibility: hidden;
+    width: 100%; height: 100%; position: absolute;
+    top: 0px; left: 0px; text-align: center; z-index: 999; visibility: hidden;
     background-color: white; opacity: 0.6;
 }
 
 #loading {
-    width: 100%; height: 100%; position: fixed; text-align: center; z-index: 999; visibility: hidden;
+    width: 100%; height: 100%; position: absolute;
+    top: 0px; left: 0px;
+    text-align: center; z-index: 999; visibility: hidden;
     background-color: white; opacity: 0.6;
 }
 
 #loading img {
+    margin-top: 25%
+}
+#loading_1 img {
     margin-top: 25%
 }
 
@@ -65,4 +83,38 @@ body {
 
 .account_info_tables td {
      border: solid lightgrey 1px; border-collapse: collapse;
+}
+
+.login_body_content {
+    border: solid 1px darkseagreen; margin-top: 20%; margin-left: 35.5%;
+    width: 350px; height: 195px;  border-radius: 8px;
+}
+
+.login_h {
+    width: 300px; margin: auto; margin-top: -25px; margin-left: 26px;
+    padding-bottom: 10px; background-color: white; text-align: center;
+    color: darkseagreen;
+}
+
+.login_body {
+    width: 100% ; height: auto; font-size: 16px;
+}
+
+.login_div {
+    width: 300px; height: 170px; margin: auto; margin-left: 75px; margin-top: 20px; border: solid 1px lightgrey;
+    border-radius: 8px; background-color: darkseagreen;
+    display: block;
+}
+
+.login_content {
+    margin: 25px;
+}
+
+.froget_a {
+    position: relative; top: 5px; left: 110px; font-size: 10px;
+}
+
+.login_button {
+    margin: -30px 0px 0px 170px; background-color: lightgrey; border-radius: 4px; width: 26%;
+    height: 30%; vertical-align: middle;
 }
