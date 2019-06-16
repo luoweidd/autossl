@@ -100,6 +100,13 @@ def dns_validation():
                 else:
                     remsg = re.getmsg(10015)
                     return json.dumps(re.msg(remsg))
+            else:
+                result = re.getmsg(10015)
+                result['msg'] =validation_result
+                return json.dumps(result)
+        else:
+            remsg = re.getmsg(10015)
+            return json.dumps(re.msg(remsg))
     else:
         remsg = re.getmsg(10015)
         return json.dumps(re.msg(remsg))

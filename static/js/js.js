@@ -61,13 +61,13 @@ function dns_validation() {
             // var load = $("#loading_1")
             // load[0].style.visibility="hidden";
             var res=JSON.parse(result);
-            $('.validation_res').text(res.msg);
+            $('.validationres').text(res.msg);
         },
         messageerror:function (result) {
             var load = $("#loading_1");
             load[0].style.visibility="hidden";
             var res=JSON.parse(result);
-            $('.validation_res').text(res.msg);
+            $('.validationres').text(res.msg);
         }
     });
 }

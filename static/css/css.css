@@ -22,7 +22,7 @@ body {
 }
 
 .input_div {
-    width: 800px; margin: auto; margin-top: 180px;
+    width: 1000px; margin: auto; margin-top: 180px; text-align: center;
 }
 
 .content {
@@ -30,9 +30,10 @@ body {
     width: 100%; font-size: 14px;
 }
 
-.validation_res {
-    text-align: left; margin-top: 10px;
-    width: 100%; font-size: 14px;
+.validationres {
+    width: 1000px; margin: auto;
+    text-align: left; margin-top: 30px;
+    font-size: 14px; z-index: 10;
 }
 
 #letf_form {

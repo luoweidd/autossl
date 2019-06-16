@@ -393,7 +393,10 @@ class ssl_cert_v2:
             self.log.error('Status Code:%s' % resp.status_code)
             self.log.error("[ERROR] All info: %s"%json.dumps(resp.text))
             return "System error, please contact the system administrator!"
-        return json.loads(resp.text)
+        if resp.status_code == 201:
+            order_location = resp.headers['Location']
+            return order_location
+        return resp.text
 
     def get_cert(self):
         pass
