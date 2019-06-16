@@ -6,8 +6,8 @@ var head = document.getElementsByTagName('head')[0];
 head.appendChild(newscript);
 
 function loading_c() {
-    var load = $("#loading")
-    load[0].style.visibility="visible"
+    var load = $("#loading");
+    load[0].style.visibility="visible";
     $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
 }
 
@@ -19,29 +19,33 @@ function submit_apply() {
         dataType:'text',
         data:data,
         beforeSend:function(){
-            var load = $("#loading_1")
-            load[0].style.visibility="visible"
+            var load = $("#loading_1");
+            load[0].style.visibility="visible";
             $("#loading_1").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
             },
         success:function(result){
-            var load = $("#loading_1")
+            var load = $("#loading_1");
             load[0].style.visibility="hidden";
-            var res=JSON.parse(result)
-            $('.content').text(res.msg)
-            var validation = $("#dns_validation")
-            validation[0].style.visibility="visible"
+            var res=JSON.parse(result);
+            $('.content').text(res.msg[0]);
+            var validation = $("#dns_validation");
+            validation[0].style.visibility="visible";
+            validation[0].title = res.msg[1];
         },
         messageerror:function (result) {
             var load = $("#loading_1")
             load[0].style.visibility="hidden";
-            var res=JSON.parse(result)
-            $('.content').text(res.msg)
+            var res=JSON.parse(result);
+            $('.content').text(res.msg);
         }
     });
 }
 
 function dns_validation() {
-        var data=$('.input-xxlarge').val();
+        var domains = $('.input-xxlarge').val();
+        var auth_link = $("#dns_validation");
+        var auth = auth_link[0].title.toString()
+        var data = JSON.stringify([domains,auth])
     $.ajax({
         url:"/dns_validation",
         type:'POST',
@@ -56,14 +60,14 @@ function dns_validation() {
         success:function(result){
             // var load = $("#loading_1")
             // load[0].style.visibility="hidden";
-            var res=JSON.parse(result)
-            $('.validation_res').text(res.msg)
+            var res=JSON.parse(result);
+            $('.validation_res').text(res.msg);
         },
         messageerror:function (result) {
-            var load = $("#loading_1")
+            var load = $("#loading_1");
             load[0].style.visibility="hidden";
-            var res=JSON.parse(result)
-            $('.validation_res').text(res.msg)
+            var res=JSON.parse(result);
+            $('.validation_res').text(res.msg);
         }
     });
 }
@@ -74,20 +78,20 @@ function loader() {
         type:'GET',
         dataType:'text',
         beforeSend:function(){
-            var load = $("#loading")
-            load[0].style.visibility="visible"
+            var load = $("#loading");
+            load[0].style.visibility="visible";
             $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
             },
         success:function(result){
-            var load = $("#loading")
+            var load = $("#loading");
             load[0].style.visibility="hidden";
             var res=JSON.parse(result);
             $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
         },
         messageerror:function (result) {
-            var load = $("#loading")
+            var load = $("#loading");
             load[0].style.visibility="hidden";
-            var res=JSON.parse(result)
+            var res=JSON.parse(result);
             $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
         }
     });

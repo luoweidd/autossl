@@ -81,12 +81,12 @@ def account_order():
 def dns_validation():
     if request.method =='POST':
         data = request.get_data()
-        domains = [data]
+        data = eval(data)
+        domains = [data[0]]
         ssl_v2 = ssl_cert_v2()
-        order = ssl_v2.old_order()
-        if order != None:
-            auth = ssl_v2.get_auth(order)
-            validation_result = ssl_v2.dns_validation(auth)
+        auth_link = data[1]
+        if auth_link != None:
+            validation_result = ssl_v2.dns_validation(auth_link)
             if validation_result is True:
                 cert = ssl_v2.get_cert()
                 '''
