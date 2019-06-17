@@ -22,6 +22,9 @@ function submit_apply() {
             var load = $("#loading_1");
             load[0].style.visibility="visible";
             $("#loading_1").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+            $('.validationres').text("");
+            var validation = $("#dns_validation");
+            validation[0].style.visibility="visible";
             },
         success:function(result){
             var load = $("#loading_1");
@@ -31,6 +34,7 @@ function submit_apply() {
             var validation = $("#dns_validation");
             validation[0].style.visibility="visible";
             validation[0].title = res.msg[1];
+            validation[0].alt = res.msg[2];
         },
         messageerror:function (result) {
             var load = $("#loading_1")
@@ -44,7 +48,8 @@ function submit_apply() {
 function dns_validation() {
         var domains = $('.input-xxlarge').val();
         var auth_link = $("#dns_validation");
-        var auth = auth_link[0].title.toString()
+        var auth = auth_link[0].title.toString();
+        var challenge = auth_link[0].alt.toString();
         var data = JSON.stringify([domains,auth])
     $.ajax({
         url:"/dns_validation",
