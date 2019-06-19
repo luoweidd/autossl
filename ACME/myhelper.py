@@ -11,7 +11,6 @@
 
 import	base64
 import	binascii
-import	configparser
 import	json
 import	subprocess,os
 import	OpenSSL
@@ -68,6 +67,7 @@ def create_csr(pkey, domain_name, email_address):
 
 	return cert
 
+
 # Load the privte Key
 def csr_file_key(KEY_FILE,domain,emailAddress):
 	data = open(KEY_FILE, 'rt').read()
@@ -80,13 +80,6 @@ def csr_file_key(KEY_FILE,domain,emailAddress):
 		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
 		f.write(data.decode('utf-8'))
 
-def make_certificate_key(domainname):
-    filename = '*./%s/%s.key'%(domainname,domainname)
-    key = RSA.generate(4096)
-    if not os.path.exists(domainname):
-        os.makedirs('*./%s'%domainname,mode=0775)
-    with open(filename,'w') as f:
-        f.write(key.exportKey().decode('utf-8'))
 
 def get_domains_from_csr(csrFile):
 	""" Return the domain names from a CSR """
@@ -227,55 +220,37 @@ def Confirm(msg):
 
 	return True
 
+
 def create_rsa_private_key(filename):
+
+	if os.path.exists(filename) is False:
+		path_strs = filename.split("/")
+		path_strs.remove(path_strs[len(path_strs)-1])
+		path = ''
+		for i in path_strs:
+			path += i
+		os.makedirs(path, mode=0o775)
+		with open(filename,'w+') as c:
+			c.close()
+
 	key = RSA.generate(4096)
 
-	with open(filename, 'w') as f:
+	with open(filename, 'w+') as f:
 		f.write(key.exportKey().decode('utf-8'))
-
 	return True
 
 
-def create_csr(csr_pkey, domain_name, email_address):
-	""" Generate a certificate signing request """
+def create_domains_csr(KEY_FILE, CSR_FILE, domainName, emailAddress):
+	create_rsa_private_key(KEY_FILE)
+	data = open(KEY_FILE, 'rt').read()
 
-	# create certifcate request
-	cert = OpenSSL.crypto.X509Req()
-	cert.get_subject().emailAddress = email_address
-	cert.get_subject().CN = domain_name
+	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
 
-	key_usage = [b"Digital Signature", b"Non Repudiation", b"Key Encipherment"]
+	csr_cert = create_csr(csr_pkey, domainName, emailAddress)
 
-	san_list = ["DNS:" + domain_name]
-
-	cert.add_extensions([
-		OpenSSL.crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
-		OpenSSL.crypto.X509Extension(b"keyUsage", False, b",".join(key_usage)),
-		OpenSSL.crypto.X509Extension(b"subjectAltName", False, ", ".join(san_list).encode("utf-8"))
-	])
-
-	cert.set_pubkey(csr_pkey)
-	cert.sign(csr_pkey, 'sha256')
-
-	return cert
+	with open(CSR_FILE, 'wt') as f:
+		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
+		f.write(data.decode('utf-8'))
 
 
-# def make_csrfile(domain_name, email_address):
-# 	data = open(KEY_FILE, 'rt').read()
-#
-# 	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
-#
-# 	csr_cert = create_csr(csr_pkey, domain_name, email_address)
-#
-# 	with open(CSR_FILE, 'wt') as f:
-# 		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
-# 		f.write(data.decode('utf-8'))
-
-def make_certificate_key(domain_name):
-    filename = '%s/%s.key'%(domain_name,domain_name)
-    key = RSA.generate(4096)
-    if not os.path.exists(domain_name):
-        os.makedirs('%s'%domain_name,mode=0775)
-    with open(filename,'w') as f:
-        f.write(key.exportKey().decode('utf-8'))
 

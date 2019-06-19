@@ -50,7 +50,7 @@ function dns_validation() {
         var auth_link = $("#dns_validation");
         var auth = auth_link[0].title.toString();
         var challenge = auth_link[0].alt.toString();
-        var data = JSON.stringify([domains,auth])
+        var data = JSON.stringify([domains,auth,challenge])
     $.ajax({
         url:"/dns_validation",
         type:'POST',

@@ -84,10 +84,9 @@ def dns_validation():
         data = eval(data)
         domains = [data[0]]
         ssl_v2 = ssl_cert_v2()
-        auth_link = data[1]
+        auth_link = data[2]
         if auth_link != None:
-            validation = ssl_v2.dns_validation(auth_link)
-            validation_result = ssl_v2.dns_challenge(validation)
+            validation_result = ssl_v2.dns_validation(auth_link)
             if validation_result is True:
                 cert = ssl_v2.get_cert()
                 '''
