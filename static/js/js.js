@@ -35,6 +35,7 @@ function submit_apply() {
             validation[0].style.visibility="visible";
             validation[0].title = res.msg[1];
             validation[0].alt = res.msg[2];
+            validation[0].label = res.msg[3];
         },
         messageerror:function (result) {
             var load = $("#loading_1")
@@ -50,7 +51,8 @@ function dns_validation() {
         var auth_link = $("#dns_validation");
         var auth = auth_link[0].title.toString();
         var challenge = auth_link[0].alt.toString();
-        var data = JSON.stringify([domains,auth,challenge])
+        var txt = auth_link[0].label.toString();
+        var data = JSON.stringify([domains,auth,challenge,txt])
     $.ajax({
         url:"/dns_validation",
         type:'POST',

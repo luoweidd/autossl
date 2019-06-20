@@ -23,11 +23,13 @@ app = Flask(__name__)
 
 re=msg()
 
+@app.route('/index')
+@app.route('/login')
 @app.route('/')
 def hello_world():
-    return render_template('index.html')
+    return render_template('login.html')
 
-@app.route('/applysslfrom')
+@app.route('/home')
 def sslfrom():
     return render_template('applyform.html')
 
@@ -39,7 +41,7 @@ def applyssl():
         domains = [data]
         order = ssl_Cert.new_order(domains)
         get_auth = ssl_Cert.get_auth(order)
-        get_dns_auth = ssl_Cert.dns_auth(get_auth)
+        get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
         if get_dns_auth != None:
             result=re.getmsg(0)
             result['msg']=get_dns_auth
@@ -84,9 +86,11 @@ def dns_validation():
         data = eval(data)
         domains = [data[0]]
         ssl_v2 = ssl_cert_v2()
-        auth_link = data[2]
+        auth_link = data[1]
+        challeng_link = data[2]
+        txt = data[3]
         if auth_link != None:
-            validation_result = ssl_v2.dns_validation(auth_link)
+            validation_result = ssl_v2.dns_validation(txt,domains,auth_link,challeng_link)
             if validation_result is True:
                 cert = ssl_v2.get_cert()
                 '''

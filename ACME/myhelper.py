@@ -11,7 +11,7 @@
 
 import	base64
 import	binascii
-import	json
+import	json,dns.resolver
 import	subprocess,os
 import	OpenSSL
 import  logging
@@ -80,6 +80,10 @@ def csr_file_key(KEY_FILE,domain,emailAddress):
 		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
 		f.write(data.decode('utf-8'))
 
+def load_csr_file(csrfile):
+	with open(csrfile, 'r') as f:
+		data = f.read()
+		return data
 
 def get_domains_from_csr(csrFile):
 	""" Return the domain names from a CSR """
@@ -223,7 +227,7 @@ def Confirm(msg):
 
 def create_rsa_private_key(filename):
 
-	if os.path.exists(filename) is False:
+	if os.path.exists(filename) is False and filename != 'account.key':
 		path_strs = filename.split("/")
 		path_strs.remove(path_strs[len(path_strs)-1])
 		path = ''
@@ -251,6 +255,14 @@ def create_domains_csr(KEY_FILE, CSR_FILE, domainName, emailAddress):
 	with open(CSR_FILE, 'wt') as f:
 		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
 		f.write(data.decode('utf-8'))
+        return True
 
-
+def dns_query(domain):
+	try:
+		cname = dns.resolver.query(domain, 'TXT')
+		for i in cname.response.answer:
+			for j in i.items:
+				return j.to_text()
+	except dns.resolver.NXDOMAIN as e:
+		log.error(e)
 
