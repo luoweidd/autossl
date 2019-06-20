@@ -51,12 +51,22 @@
 # res= ascii_10_to_ascii_16(zw)
 # print "16:",res
 # print 'bs64:',myhelper.b64(res)
-import dns.resolver
-try:
-    domain='_acme-challenge.hzqp777.com'
-    cname = dns.resolver.query(domain, 'TXT')
-    for i in cname.response.answer:
-        for j in i.items:
-            j.to_text()
-except dns.resolver.NXDOMAIN as e:
-    print e
+# import dns.resolver
+# try:
+#     domain='_acme-challenge.hzqp777.com'
+#     cname = dns.resolver.query(domain, 'TXT')
+#     for i in cname.response.answer:
+#         for j in i.items:
+#             j.to_text()
+# except dns.resolver.NXDOMAIN as e:
+#     print e
+
+from ACME import myhelper
+csr_file = 'C:\Users\jeak_\Desktop\haoshunjinrong\certificate.csr'
+csr = myhelper.read_csr_file(csr_file)
+qt = csr.replace('-----BEGIN CERTIFICATE REQUEST-----\n','')
+qw = qt.replace('\n-----END CERTIFICATE REQUEST-----','')
+qq = qw.replace("\n",'')
+csr_load = myhelper.load_csr_file(csr_file)
+print csr_load
+print csr

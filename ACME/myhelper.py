@@ -49,7 +49,7 @@ def create_csr(pkey, domain_name, email_address):
 
 	# create certifcate request
 	cert = OpenSSL.crypto.X509Req()
-	cert.get_subject().emailAddress = email_address
+	cert.get_subject().emailAddress = email_address[0]
 	cert.get_subject().CN = domain_name
 
 	key_usage = [b"Digital Signature", b"Non Repudiation", b"Key Encipherment"]
@@ -83,35 +83,29 @@ def csr_file_key(KEY_FILE,domain,emailAddress):
 def load_csr_file(csrfile):
 	with open(csrfile, 'r') as f:
 		data = f.read()
+		cert = OpenSSL.crypto.load_certificate_request(OpenSSL.crypto.FILETYPE_PEM, data)
+		return cert
+
+def read_csr_file(csrfile):
+	with open(csrfile, 'r') as f:
+		data = f.read()
 		return data
 
 def get_domains_from_csr(csrFile):
 	""" Return the domain names from a CSR """
-
 	domains = set([])
-	with open(csrFile, 'r') as f:
-		data = f.read()
-
-	cert = OpenSSL.crypto.load_certificate_request(OpenSSL.crypto.FILETYPE_PEM, data)
-
+	cert = load_csr_file(csrFile)
 	subject = cert.get_subject()
-
 	domains.add(subject.CN)
-
 	for ext in cert.get_extensions():
 		if ext.get_short_name() != b'subjectAltName':
 			continue
-
 		data = ext.__str__()
-
 		names = [x.strip() for x in data.split(',')]
-
 		for name in names:
 			domains.add(name[4:])
-
 	if not domains:
 		raise ValueError("No domains to validate in the provided CSR.")
-
 	return domains
 
 def process_error_message(msg):
