@@ -62,7 +62,7 @@
 #     print e
 
 from ACME import myhelper
-csr_file = 'C:\Users\jeak_\Desktop\haoshunjinrong\certificate.csr'
+csr_file = '/home/devops/Documents/devops/autossl/haoshunjinrong.com/certificate.csr'
 csr = myhelper.read_csr_file(csr_file)
 qt = csr.replace('-----BEGIN CERTIFICATE REQUEST-----\n','')
 qw = qt.replace('\n-----END CERTIFICATE REQUEST-----','')
@@ -70,3 +70,13 @@ qq = qw.replace("\n",'')
 csr_load = myhelper.load_csr_file(csr_file)
 print csr_load
 print csr
+
+# import re
+#
+# file = 'qreqwrq.asfalsjd.com'
+# if re.match('^\*.*\.*',file):
+#     print True
+#     ll = re.sub('^\*\.','',file)
+#     print ll
+# else:
+#     print False

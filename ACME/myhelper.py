@@ -72,22 +72,24 @@ def create_csr(pkey, domain_name, email_address):
 def csr_file_key(KEY_FILE,domain,emailAddress):
 	data = open(KEY_FILE, 'rt').read()
 
-	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
+	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_ASN1, data)
 
 	csr_cert = create_csr(csr_pkey, domain, emailAddress)
 
 	with open('./%s/%s.csr'%(domain,domain), 'wt') as f:
-		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
+		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_ASN1, csr_cert)
 		f.write(data.decode('utf-8'))
 
 def load_csr_file(csrfile):
-	with open(csrfile, 'r') as f:
+	with open(csrfile, 'rt') as f:
 		data = f.read()
-		cert = OpenSSL.crypto.load_certificate_request(OpenSSL.crypto.FILETYPE_PEM, data)
+		cert = OpenSSL.crypto.load_certificate_request(OpenSSL.crypto.FILETYPE_ASN1, data)
 		return cert
 
 def read_csr_file(csrfile):
-	with open(csrfile, 'r') as f:
+	import os
+	print '%s'%os.getcwd()
+	with open(csrfile, 'rt') as f:
 		data = f.read()
 		return data
 
@@ -122,7 +124,7 @@ def load_private_key(keyfile):
 			data = f.read()
 
 		if data.startswith('-----BEGIN '):
-			pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
+			pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_ASN1, data)
 		else:
 			pkey = OpenSSL.crypto.load_pkcs12(data).get_privatekey()
 
@@ -221,16 +223,15 @@ def Confirm(msg):
 
 def create_rsa_private_key(filename):
 
-	if os.path.exists(filename) is False and filename != 'account.key':
+	if os.path.exists(filename) is False or filename != 'account.key':
 		path_strs = filename.split("/")
 		path_strs.remove(path_strs[len(path_strs)-1])
 		path = ''
 		for i in path_strs:
 			path += i
-		os.makedirs(path, mode=0o775)
+		os.makedirs(path, mode=0o777)
 		with open(filename,'w+') as c:
 			c.close()
-
 	key = RSA.generate(4096)
 
 	with open(filename, 'w+') as f:
@@ -242,12 +243,12 @@ def create_domains_csr(KEY_FILE, CSR_FILE, domainName, emailAddress):
 	create_rsa_private_key(KEY_FILE)
 	data = open(KEY_FILE, 'rt').read()
 
-	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
+	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_ASN1, data)
 
 	csr_cert = create_csr(csr_pkey, domainName, emailAddress)
 
-	with open(CSR_FILE, 'wt') as f:
-		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
+	with open(CSR_FILE, 'wt',mode=0o777) as f:
+		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_ASN1, csr_cert)
 		f.write(data.decode('utf-8'))
         return True
 

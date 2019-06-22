@@ -89,7 +89,7 @@ class ssl_cert_v2:
         self.log.info('Terms of Service:%s'%terms_service)
         # Create the account request
         if terms_service != "":
-            payload = {"termsOfServiceAgreed": True,"contact": [self.EmailAddresses]}
+            payload = {"termsOfServiceAgreed": True,"contact": self.EmailAddresses}
             self.log.info(payload)
         body_top = {"alg": "RS256","jwk": myhelper.get_jwk(self.AccountKeyFile),"url": accuount_url,"nonce": nonce}
         jose = self.data_packaging(payload,body_top)
@@ -231,11 +231,17 @@ class ssl_cert_v2:
     def new_order(self,domain):
         """ Request an SSL certificate from the ACME server """
         if domain != None:
-            domain_dir = domain[0].split('.')[1]
-            key_name = '%s/privte.key'%domain_dir
-            csr_name = '%s/certificate.csr'%domain_dir
+            domian = domain[0]
+            import re
+            if re.match('^\*.*\.*',domian):
+                domain_dir = re.sub('^\*\.','',domian)
+                key_name = '%s/privte.key'%domain_dir
+                csr_name = '%s/certificate.csr'%domain_dir
+            else:
+                key_name = '%s/privte.key'%domian
+                csr_name = '%s/certificate.csr'%domian
             import os
-            if os.path.exists(csr_name) is True:
+            if os.path.exists(csr_name) is False:
                 domian_csr_file = myhelper.create_domains_csr(key_name,csr_name,domain[0],self.EmailAddresses)
                 if domian_csr_file is True:
                     domains = myhelper.get_domains_from_csr(csr_name)
@@ -354,18 +360,27 @@ class ssl_cert_v2:
             dns_query = myhelper.dns_query(domain).split("\"")[1]
             if dns_query == TXT:
                 challenge_status = json.loads(requests.get(challenge).text)["status"]
-                dns_challenge = self.dns_challenge(challenge)
-                if dns_challenge != None or dns_challenge != 'System error, please contact the system administrator!':
-                    challenge_res = json.loads(dns_challenge)
-                    if challenge_res["status"] == "invalid":
-                        self.auth_deactivated(auth["authorizations"][0])
-                        self.log.error('[auth error] Authorization error, now stop authorization。')
-                        return challenge_res
-                    elif challenge_res["status"] == "valid":
-                        finalize_res = self.finalize(auth)
-                        cert_info = self.get_cert(finalize_res)
-                        return cert_info
-                    self.log.info(dns_challenge)
+                if challenge_status == "pending":
+                    dns_challenge = self.dns_challenge(challenge)
+                    if dns_challenge != None or dns_challenge != 'System error, please contact the system administrator!':
+                        challenge_res = json.loads(dns_challenge)
+                        if challenge_res["status"] == "invalid":
+                            self.auth_deactivated(auth["authorizations"][0])
+                            self.log.error('[auth error] Authorization error, now stop authorization。')
+                            return challenge_res
+                        elif challenge_status == "valid":
+                            finalize_res = self.finalize(auth)
+                            cert_info = self.get_cert(finalize_res)
+                            return cert_info
+                        self.log.info(dns_challenge)
+                elif challenge_status == "valid":
+                    finalize_res = self.finalize(auth)
+                    cert_info = self.get_cert(finalize_res)
+                    return cert_info
+                else:
+                    self.auth_deactivated(auth["authorizations"][0])
+                    self.log.error('[auth error] Authorization error, now stop authorization。')
+                    return challenge_res
         else:
             return 'DNS validation failed.info：%s'%dns_query
 
@@ -401,9 +416,10 @@ class ssl_cert_v2:
     def finalize(self,order_info):
         if order_info != None:
             order_info = json.loads(order_info)
-            domain = order_info["identifiers"][0]["value"]
-            csr_name = '%s/certificate.csr' % domain.split(".")[1]
-            csr = myhelper.load_csr_file(csr_name).replace("-----BEGIN CERTIFICATE REQUEST-----\n",'').replace("\n-----END CERTIFICATE REQUEST-----",'').replace('\n','')
+            import re
+            domain = re.sub('^\*\.','',order_info["identifiers"][0]["value"])
+            csr_name = '%s/certificate.csr' % domain
+            csr = myhelper.read_csr_file(csr_name).replace("-----BEGIN CERTIFICATE REQUEST-----\n",'').replace("\n-----END CERTIFICATE REQUEST-----",'').replace('\n','')
             new_accuount = self.get_directory()
             nonce = self.get_nonce(new_accuount[self.nonec_path])
             payload = {"csr":myhelper.b64(csr)}
