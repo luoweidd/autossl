@@ -76,7 +76,8 @@ function dns_validation() {
             var load = $("#loading_1");
             load[0].style.visibility="hidden";
             $('.validationres').html(txts);
-
+            var auth_buttom = $("#dns_validation");
+            auth_buttom[0].style.visibility = "hidden";
         },
         messageerror:function (result) {
             var load = $("#loading_1");

@@ -23,7 +23,8 @@ class ssl_cert_v2:
 
     logs = loglog()
     log = logs.logger
-    base_path = 'https://acme-staging-v02.api.letsencrypt.org/directory'
+    base_path_test = 'https://acme-staging-v02.api.letsencrypt.org/directory'
+    base_path = 'https://acme-v02.api.letsencrypt.org/directory'
 
     #request headers
     headers = {

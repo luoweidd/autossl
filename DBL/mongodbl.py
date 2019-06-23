@@ -5,3 +5,27 @@
 # @FileName: mongodbl.py
 # @Software: PyCharm
 # @Blog    ：http://……
+
+import pymongo
+from base import mylog
+
+class mongoDBL:
+
+    def __init__(self):
+        self._connect_str = '"mongodb://%s:%s@127.0.0.1:27017/?authSource=%s"'%(self.db_user,self.db_passwd,self.database)
+        # mongodb: // root @ localhost:27017 /?authSource = game_server
+        self.conect_cur = self.DBConect()
+        self.database = 'red_packet_game_server'
+        self.db_user = ''
+        self.db_passwd = ''
+        self.log = mylog.loglog.logger
+
+    def DBConect(self):
+        try:
+            connection=pymongo.MongoClient(self._connect_str)
+            db=connection.get_database(self.database)
+            connection.close()
+            return db
+        except Exception as e:
+            self.log.error("连接错误，错误消息：%s"%e)
+

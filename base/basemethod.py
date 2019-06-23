@@ -10,7 +10,7 @@
  * Time: 上午8:59
 '''
 
-import platform,subprocess,os
+import platform,subprocess,os,hashlib
 
 
 def get_os_info():
@@ -33,3 +33,7 @@ def systemc_dir_flag():
         return '\\'
     else:
         return '/'
+
+def MD5(value):
+    md5_v = hashlib.md5(value).digest()
+    return md5_v
