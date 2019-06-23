@@ -93,6 +93,7 @@ def dns_validation():
             validation_result = ssl_v2.dns_validation(txt,domains,challeng_link,auth_link)
             if validation_result is True:
                 cert = ssl_v2.get_cert()
+                return cert
                 '''
                 补齐nginx配置文件修改，并重启nginx服务，使配置生效。需做判断如出现配置错误回滚配置，并返回提示！
                 '''

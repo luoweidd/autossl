@@ -16,6 +16,7 @@ import json
 import myhelper
 import os,time
 from base.mylog import loglog
+from base import basemethod
 
 
 class ssl_cert_v2:
@@ -42,7 +43,7 @@ class ssl_cert_v2:
     revokeCert="revokeCert"
     keyChange="keyChange"
 
-    AccountKeyFile = 'account.key'
+    AccountKeyFile = '%s%scertificate%saccount.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag())
     EmailAddresses = ['mailto:654622452@qq.com','mailto:69672452@qq.com']
 
     def get_directory(self):
@@ -118,7 +119,9 @@ class ssl_cert_v2:
         # Create the account request
         payload = {"termsOfServiceAgreed": True, "contact": self.EmailAddresses}
         nonce=self.get_nonce(dir_noce[self.nonec_path])
-        body_top = {"alg": "RS256","jwk": myhelper.get_jwk(self.AccountKeyFile),"url": dir_noce[self.account_path],"nonce": nonce}
+        self.check_account_key_file()
+        jwk = myhelper.get_jwk(self.AccountKeyFile)
+        body_top = {"alg": "RS256","jwk":jwk ,"url": dir_noce[self.account_path],"nonce": nonce}
         jose = self.data_packaging(payload,body_top)
         # Make the ACME request
         try:
@@ -231,39 +234,38 @@ class ssl_cert_v2:
     def new_order(self,domain):
         """ Request an SSL certificate from the ACME server """
         if domain != None:
-            domain_dir = domain[0].split('.')[1]
-            key_name = '%s/privte.key'%domain_dir
-            csr_name = '%s/certificate.csr'%domain_dir
+            domain_dir = myhelper.DomainDewildcards(domain[0])
+            key_name = '%s%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+            csr_name = '%s%scertificate%s%s%scertificate.csr'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
             import os
-            if os.path.exists(csr_name) is True:
-                domian_csr_file = myhelper.create_domains_csr(key_name,csr_name,domain[0],self.EmailAddresses)
-                if domian_csr_file is True:
-                    domains = myhelper.get_domains_from_csr(csr_name)
-                    # Create the account request
-                    accounts = self.get_account_url()
-                    dir = self.get_directory()
-                    order_url = dir[self.order_path]
-                    self.log.info("Request to the ACME server an order to validate domains.")
-                    payload = {"identifiers": [{"type": "dns", "value": domain} for domain in domains]}
-                    body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": dir[self.order_path]}
-                    jose = self.data_packaging(payload,body_top)
-                    # Make the ACME request
-                    try:
-                        resp = requests.post(order_url, json=jose, headers=self.headers)
-                    except requests.exceptions.RequestException as error:
-                        resp = error.response
-                        self.log.error(resp)
-                    except Exception as error:
-                        self.log.error(error)
-                    if resp.status_code < 200 or resp.status_code >= 300:
-                        self.log.error('Error calling ACME endpoint:%s'%resp.reason)
-                        self.log.error('Status Code:%s'%resp.status_code)
-                        return "System error, please contact the system administrator!"
-                    else:
-                        # nonce = resp.headers[self.nonec]
-                        if resp.status_code == 201:
-                            order_location = resp.headers['Location']
-                            return order_location
+            if os.path.exists(csr_name) is False:
+                myhelper.create_domains_csr(key_name,csr_name,domain[0],self.EmailAddresses)
+            domains = myhelper.get_domains_from_csr(csr_name)
+            # Create the account request
+            accounts = self.get_account_url()
+            dir = self.get_directory()
+            order_url = dir[self.order_path]
+            self.log.info("Request to the ACME server an order to validate domains.")
+            payload = {"identifiers": [{"type": "dns", "value": domain} for domain in domains]}
+            body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": dir[self.order_path]}
+            jose = self.data_packaging(payload,body_top)
+            # Make the ACME request
+            try:
+                resp = requests.post(order_url, json=jose, headers=self.headers)
+            except requests.exceptions.RequestException as error:
+                resp = error.response
+                self.log.error(resp)
+            except Exception as error:
+                self.log.error(error)
+            if resp.status_code < 200 or resp.status_code >= 300:
+                self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+                self.log.error('Status Code:%s'%resp.status_code)
+                return "System error, please contact the system administrator!"
+            else:
+                # nonce = resp.headers[self.nonec]
+                if resp.status_code == 201:
+                    order_location = resp.headers['Location']
+                    return order_location
             return 'create csr file  error'
 
 
@@ -342,7 +344,7 @@ class ssl_cert_v2:
                 keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
                 TXT = myhelper.b64(myhelper.hash_256_digest(keyAuthorization))
                 name = self.join_Char(LABLE, domain_name)
-                return ["DNS parse name: %s type: TXT value: %s \\n Please wait for the DNS parsing to take effect."%(name,TXT),json.dumps(auth_info),challenge["challenges"][0]["url"],TXT]
+                return ["DNS parse name: %s type: TXT value: %s <br> Please wait for the DNS parsing to take effect."%(name,TXT),json.dumps(auth_info),challenge["challenges"][0]["url"],TXT]
             self.log.error("[Error]: DNS auth error, data request exception.")
         return "System error, please contact the system administrator!"
 
@@ -402,11 +404,12 @@ class ssl_cert_v2:
         if order_info != None:
             order_info = json.loads(order_info)
             domain = order_info["identifiers"][0]["value"]
-            csr_name = '%s/certificate.csr' % domain.split(".")[1]
-            csr = myhelper.load_csr_file(csr_name).replace("-----BEGIN CERTIFICATE REQUEST-----\n",'').replace("\n-----END CERTIFICATE REQUEST-----",'').replace('\n','')
+            csr_name = '%s%scertificate%s%s%scertificate.csr'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),myhelper.DomainDewildcards(domain),basemethod.systemc_dir_flag())
+            csr = myhelper.load_csr_file(csr_name)
             new_accuount = self.get_directory()
             nonce = self.get_nonce(new_accuount[self.nonec_path])
-            payload = {"csr":myhelper.b64(csr)}
+            certificate_der = myhelper.csr_pem_to_der(csr)
+            payload = {"csr":myhelper.b64(certificate_der)}
             account_url = self.get_account_url()[1]
             body_top = {"alg": "RS256", "kid": account_url, "url": order_info["finalize"], "nonce": nonce}
             jose = self.data_packaging(payload, body_top)
@@ -424,24 +427,16 @@ class ssl_cert_v2:
                 self.log.error('Error calling ACME endpoint:%s' % resp.reason)
                 self.log.error('Status Code:%s' % resp.status_code)
                 self.log.error("[ERROR] All info: %s" % json.dumps(resp.text))
-                return "本次申请状态已失效，请重新输入域名点击验证按钮"
-            if resp.status_code == 201:
-                order_location = resp.headers['Location']
-                return order_location
-            return resp.text
+                return "请重新生提交证书申请按钮!"
+            return json.loads(resp.text)
+        self.log.error('[Error] order info is None!')
         return "System error, please contact the system administrator!"
 
-    def get_cert(self,cert_down_link):
-        if cert_down_link != None or cert_down_link != "本次申请状态已失效，请重新输入域名点击验证按钮":
-            new_accuount = self.get_directory()
-            nonce = self.get_nonce(new_accuount[self.nonec_path])
-            payload = {"status": "deactivated"}
-            account_url = self.get_account_url()[1]
-            body_top = {"alg": "RS256", "kid": account_url, "url": cert_down_link, "nonce": nonce}
-            jose = self.data_packaging(payload, body_top)
-            self.headers["Accept":"application/pem-certificate-chain"]
+    def get_cert(self,cert_down):
+        if cert_down != None or cert_down != "System error, please contact the system administrator!" or cert_down["status"] == "valid" and cert_down["certificate"]:
+            self.headers.update({"Accept":"application/pem-certificate-chain"})
             try:
-                resp = requests.post(cert_down_link, json=jose, headers=self.headers)
+                resp = requests.get(cert_down["certificate"], headers=self.headers)
                 self.log.info(json.dumps(resp.text))
             except requests.exceptions.RequestException as error:
                 resp = error.response
@@ -455,7 +450,13 @@ class ssl_cert_v2:
                 self.log.error('Status Code:%s' % resp.status_code)
                 self.log.error("[ERROR] All info: %s" % json.dumps(resp.text))
                 return "本次申请状态已失效，请重新输入域名点击验证按钮"
-            return resp.text
+            domain_name = cert_down['identifiers'][0]['value']
+            domain_dir = myhelper.DomainDewildcards(domain_name)
+            certificate_name = '%s%scertificate%s%s%scertificate.pem'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+            key_name = '%s%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+
+            myhelper.wirte_ssl_certificate(certificate_name,resp.text)
+            return domain_name,certificate_name,key_name,resp.text
         return "System error, please contact the system administrator!"
 
     def auth_deactivated(self,auth_link):

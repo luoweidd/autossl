@@ -61,12 +61,34 @@
 # except dns.resolver.NXDOMAIN as e:
 #     print e
 
-from ACME import myhelper
-csr_file = 'C:\Users\jeak_\Desktop\haoshunjinrong\certificate.csr'
-csr = myhelper.read_csr_file(csr_file)
-qt = csr.replace('-----BEGIN CERTIFICATE REQUEST-----\n','')
-qw = qt.replace('\n-----END CERTIFICATE REQUEST-----','')
-qq = qw.replace("\n",'')
-csr_load = myhelper.load_csr_file(csr_file)
-print csr_load
-print csr
+# from ACME import myhelper
+# csr_file = 'C:\Users\jeak_\Desktop\hzqp777.com\certificate.csr'
+# # csr = myhelper.read_csr_file(csr_file)
+# # qt = csr.replace('-----BEGIN CERTIFICATE REQUEST-----\n','')
+# # qw = qt.replace('\n-----END CERTIFICATE REQUEST-----','')
+# # qq = qw.replace("\n",'')
+# # # csr_load = myhelper.load_csr_file(csr_file)
+# import OpenSSL
+# from Crypto.Util.asn1 import DerSequence
+# csr = myhelper.read_csr_file(csr_file)
+# if csr.startswith('-----BEGIN'):
+#     csr_req = OpenSSL.crypto.load_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr)
+# else:
+#     csr_req = OpenSSL.crypto.load_pkcs12(csr).get_certificate()
+# certificate_key_der = DerSequence()
+# certificate_key_der.decode(OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_ASN1, csr_req)).encode()
+# ll = certificate_key_der.encode()
+# print ll
+# from base import basemethod
+# from ACME import myhelper
+# domain_dir = 'haoshunjinrong.com'
+# key_name = 'C:\Users\jeak_\Desktop\certificate\haoshunjinrong.com\privte.key'
+# import OpenSSL
+# from Crypto.Util.asn1 import DerSequence
+# key = myhelper.load_private_key(key_name)
+# certificate_key_der = DerSequence()
+# der_key = certificate_key_der.decode(OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, key))
+# exported_key = "-----BEGIN PRIVATE KEY-----\n%s-----END PRIVATE KEY-----" % der_key.encode().encode("base64")
+# print exported_key
+# with open(key_name,'w+')as f:
+#     f.write(exported_key)

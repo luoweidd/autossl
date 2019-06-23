@@ -10,7 +10,7 @@
  * Time: 上午8:59
 '''
 
-import platform,subprocess
+import platform,subprocess,os
 
 
 def get_os_info():
@@ -19,3 +19,17 @@ def get_os_info():
 def CMD(command,check_name=None):
     checkresult = subprocess.check_output('%s%s'%command,check_name)
     return checkresult
+
+def get_root_path():
+    root_path = os.getcwd()
+    return root_path
+
+def system():
+    systemc = platform.system()
+    return systemc
+
+def systemc_dir_flag():
+    if system() == 'Windows':
+        return '\\'
+    else:
+        return '/'

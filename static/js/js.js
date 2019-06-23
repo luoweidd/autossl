@@ -30,7 +30,7 @@ function submit_apply() {
             var load = $("#loading_1");
             load[0].style.visibility="hidden";
             var res=JSON.parse(result);
-            $('.content').text(res.msg[0]);
+            $('.content').html(res.msg[0]);
             var validation = $("#dns_validation");
             validation[0].style.visibility="visible";
             validation[0].title = res.msg[1];
@@ -58,17 +58,25 @@ function dns_validation() {
         type:'POST',
         dataType:'text',
         data:data,
-        // beforeSend:function(){
-        //     var load = $("#loading_1")
-        //     load[0].style.visibility="visible"
-        //     $("#loading_1").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
-        //
-        //     },
+        beforeSend:function(){
+            var load = $("#loading_1")
+            load[0].style.visibility="visible"
+            $("#loading_1").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+            },
         success:function(result){
             // var load = $("#loading_1")
             // load[0].style.visibility="hidden";
             var res=JSON.parse(result);
-            $('.validationres').text(res.msg);
+            var obj = res.msg;
+            var txts = '';
+            for (var i in obj){
+                var txt = "<p>"+obj[i]+"</p>";
+                txts += txt;
+            }
+            var load = $("#loading_1");
+            load[0].style.visibility="hidden";
+            $('.validationres').html(txts);
+
         },
         messageerror:function (result) {
             var load = $("#loading_1");

@@ -19,7 +19,7 @@ from Crypto.Util.asn1 import DerSequence
 from Crypto.PublicKey import RSA
 from Crypto.Hash.SHA256 import SHA256Hash
 
-log=logging.getLogger('"lw-ghy-acme"')
+log=logging.getLogger('lw-ghy-acme')
 
 # helper function base64 encode as defined in acme spec
 def b64(b):
@@ -36,49 +36,27 @@ def run_openssl(command, options, communicate=None):
 		stdin=subprocess.PIPE,
 		stdout=subprocess.PIPE,
 		stderr=subprocess.PIPE)
-
 	out, err = openssl.communicate(communicate)
-
 	if openssl.returncode != 0:
 		raise IOError("OpenSSL Error: {0}".format(err))
-
 	return out
 
 def create_csr(pkey, domain_name, email_address):
 	""" Generate a certificate signing request """
-
 	# create certifcate request
 	cert = OpenSSL.crypto.X509Req()
 	cert.get_subject().emailAddress = email_address[0]
 	cert.get_subject().CN = domain_name
-
 	key_usage = [b"Digital Signature", b"Non Repudiation", b"Key Encipherment"]
-
 	san_list = ["DNS:" + domain_name]
-
 	cert.add_extensions([
 		OpenSSL.crypto.X509Extension(b"basicConstraints", False, b"CA:FALSE"),
 		OpenSSL.crypto.X509Extension(b"keyUsage", False, b",".join(key_usage)),
 		OpenSSL.crypto.X509Extension(b"subjectAltName", False, ", ".join(san_list).encode("utf-8"))
 	])
-
 	cert.set_pubkey(pkey)
 	cert.sign(pkey, 'sha256')
-
 	return cert
-
-
-# Load the privte Key
-def csr_file_key(KEY_FILE,domain,emailAddress):
-	data = open(KEY_FILE, 'rt').read()
-
-	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
-
-	csr_cert = create_csr(csr_pkey, domain, emailAddress)
-
-	with open('./%s/%s.csr'%(domain,domain), 'wt') as f:
-		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
-		f.write(data.decode('utf-8'))
 
 def load_csr_file(csrfile):
 	with open(csrfile, 'r') as f:
@@ -86,10 +64,11 @@ def load_csr_file(csrfile):
 		cert = OpenSSL.crypto.load_certificate_request(OpenSSL.crypto.FILETYPE_PEM, data)
 		return cert
 
-def read_csr_file(csrfile):
-	with open(csrfile, 'r') as f:
-		data = f.read()
-		return data
+def csr_pem_to_der(csr_cert):
+	certificate_key_der = DerSequence()
+	certificate_key_der.decode(OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_ASN1, csr_cert))
+	certificate_der = certificate_key_der.encode()
+	return certificate_der
 
 def get_domains_from_csr(csrFile):
 	""" Return the domain names from a CSR """
@@ -145,10 +124,8 @@ def get_public_key_from_private_key(pkey):
 	try:
 		private_key_der = DerSequence()
 		private_key_der.decode(OpenSSL.crypto.dump_privatekey(OpenSSL.crypto.FILETYPE_ASN1, pkey))
-
 		modulus = int2hex(private_key_der[1])
 		exp = int2hex(private_key_der[2])
-
 		return modulus, exp
 	except TypeError as e:
 		print e
@@ -156,25 +133,21 @@ def get_public_key_from_private_key(pkey):
 
 def get_jwk(file):
 	""" Create the JWK token """
-
 	# Load the RSA Private Key from the file (RSA PKCS #1)
 	try:
 		pkey = load_private_key(file)
-
 		# Get the modulus and public exponent from the private key
 		modulus, pub_exp = get_public_key_from_private_key(pkey)
-
 		n = binascii.unhexlify(modulus)		# convert to binary data
 		e = binascii.unhexlify(pub_exp)		# convert to binary data
-
 		jwk = {
 			"e": b64(e),
 			"kty": "RSA",
 			"n": b64(n)
 		}
-
 		return jwk
 	except Exception as e:
+		print e
 		return None
 
 def JWK_Thumbprint(key_dict):
@@ -218,34 +191,29 @@ def Confirm(msg):
 
 	return True
 
-
 def create_rsa_private_key(filename):
-
-	if os.path.exists(filename) is False and filename != 'account.key':
-		path_strs = filename.split("/")
+	log.info(filename)
+	from base import basemethod
+	if os.path.exists(filename) is False or filename != '%s%scertificate%saccount.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag()):
+		path_strs = filename.split(basemethod.systemc_dir_flag())
 		path_strs.remove(path_strs[len(path_strs)-1])
 		path = ''
 		for i in path_strs:
-			path += i
-		os.makedirs(path, mode=0o775)
+			path += i+basemethod.systemc_dir_flag()
+			if os.path.exists(path) is False:
+				os.makedirs(path, mode=0o775)
 		with open(filename,'w+') as c:
 			c.close()
-
 	key = RSA.generate(4096)
-
 	with open(filename, 'w+') as f:
 		f.write(key.exportKey().decode('utf-8'))
 	return True
 
-
 def create_domains_csr(KEY_FILE, CSR_FILE, domainName, emailAddress):
 	create_rsa_private_key(KEY_FILE)
 	data = open(KEY_FILE, 'rt').read()
-
 	csr_pkey = OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, data)
-
 	csr_cert = create_csr(csr_pkey, domainName, emailAddress)
-
 	with open(CSR_FILE, 'wt') as f:
 		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
 		f.write(data.decode('utf-8'))
@@ -260,3 +228,15 @@ def dns_query(domain):
 	except dns.resolver.NXDOMAIN as e:
 		log.error(e)
 
+def DomainDewildcards(domain):
+	import re
+	if re.match('^\*\.*.*', domain):
+		domained = re.sub('^\*\.', '', domain)
+	else:
+		domained = domain
+	return domained
+
+def wirte_ssl_certificate(filename,content):
+	with open(filename,'wt')as f:
+		f.write(content.decode("utf-8"))
+		return True
