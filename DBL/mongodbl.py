@@ -7,18 +7,20 @@
 # @Blog    ：http://……
 
 import pymongo
-from base import mylog
+from base.mylog import loglog
 
 class mongoDBL:
 
+    _log = loglog()
+    log = _log.logger
+
     def __init__(self):
-        self._connect_str = '"mongodb://%s:%s@127.0.0.1:27017/?authSource=%s"'%(self.db_user,self.db_passwd,self.database)
-        # mongodb: // root @ localhost:27017 /?authSource = game_server
-        self.conect_cur = self.DBConect()
+
+        # mongodb: // user:passwd @ localhost:27017 /?authSource = game_server
         self.database = 'red_packet_game_server'
         self.db_user = ''
         self.db_passwd = ''
-        self.log = mylog.loglog.logger
+        self._connect_str = 'mongodb://127.0.0.1:27017/%s?authSource=%s' % (self.database, self.database)
 
     def DBConect(self):
         try:

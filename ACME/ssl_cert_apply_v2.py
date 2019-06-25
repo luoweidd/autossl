@@ -345,7 +345,7 @@ class ssl_cert_v2:
                 keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
                 TXT = myhelper.b64(myhelper.hash_256_digest(keyAuthorization))
                 name = self.join_Char(LABLE, domain_name)
-                return ["DNS parse name: %s type: TXT value: %s <br> Please wait for the DNS parsing to take effect."%(name,TXT),json.dumps(auth_info),challenge["challenges"][0]["url"],TXT]
+                return ["DNS 解析名称: %s 解析类型: TXT 解析值: %s <br> 等待解析生效，可用nslookup ——> set type=txt ———> %s 命令查看是否生效，如果查询值等于此处TXT值，即生效，即可点击验证执行证书下发。<br>" %(name,TXT),json.dumps(auth_info),challenge["challenges"][0]["url"],TXT,name]
             self.log.error("[Error]: DNS auth error, data request exception.")
         return "System error, please contact the system administrator!"
 

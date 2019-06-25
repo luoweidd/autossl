@@ -11,10 +11,28 @@ from functools import wraps
 from flask import sessions
 from base.mylog import loglog
 from base import basemethod
+from base.msgdict import msg
+
+
+def login_check(func):
+    res = msg()
+    @wraps(func)
+    def login():
+
+        User = user()
+        if sessions["user"] == User._User and sessions["passwd"] == User._Passwd:
+            result = func()
+            return result
+        else:
+            result = msg.getmsg(10)
+            return result
+    remsg = res.getmsg(11)
+    return res.msg(remsg)
 
 class user:
-    User = "admin"
-    Passwd = "123456"
+    res = msg()
+    _User = "admin"
+    _Passwd = "123456"
     log = loglog.logger
     session_cookie = sessions.SecureCookieSession()
 
@@ -40,14 +58,4 @@ class user:
     def logout_clear(self):
         pass
 
-    def login_check(func):
-        @wraps(func)
-        def login(users):
-            User = user()
-            if users["user"] == User.User and users["passwd"] == User.Passwd:
-                '''补齐功能'''
-                result = func(users)
-            else:
-                return '请登录'
 
-        return '非法请求，请按正确方式访问。'

@@ -92,3 +92,18 @@
 # print exported_key
 # with open(key_name,'w+')as f:
 #     f.write(exported_key)
+
+# import time
+# import hashlib
+# import base64
+# print base64.urlsafe_b64encode(hashlib.sha256(str(time.time())).digest()).decode('utf-8').rstrip("=")
+
+from DBL._sys_config import sys_config
+sys_obj = sys_config()
+
+sys = sys_obj.get_collection_all()
+server_list = []
+for i in sys:
+    server_list.append(i)
+
+print server_list

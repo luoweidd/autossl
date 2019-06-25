@@ -7,23 +7,34 @@
 # @Blog    ：http://……
 
 from mongodbl import mongoDBL
+from base.mylog import loglog
 
 class sys_config:
+
+    _log = loglog()
+    log = _log.logger
 
     def __init__(self):
         try:
             _mongoconnect = mongoDBL()
-            self.cur = _mongoconnect.conect_cur
-            self.collection="sys.config"
+            self.cur = _mongoconnect.DBConect()
+            self.collection="sys_config"
         except Exception as e:
             print "连接错误，错误消息：%s"%e
 
-    def gat_collection_all(self):
+    def get_collection_all(self):
         try:
-            collec = self.cur.get_collection(self.collection).find({"eflag":1})
+            collec = self.cur.get_collection(self.collection).find({'eflag':1},{"itemName","itemVal"})
             return collec
         except Exception as e:
             self.log.error( "获取%s数据错误，错误消息：%s"%(self.collection,e))
+
+    def server_list(self):
+        server_list_all = self.get_collection_all()
+        list_all = []
+        for i in server_list_all:
+            list_all.append(i)
+        return list_all
 
     def update_collection_all(self,Id,**kwargs):
         try:

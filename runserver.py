@@ -11,16 +11,21 @@
 '''
 
 from flask import Flask,request,redirect,render_template
+from flask import sessions
 from base.msgdict import msg
 from ACME.ssl_cert_apply_v2 import ssl_cert_v2
 from base.mylog import loglog
-import json
+import json,datetime
+from datetime import timedelta
+from servsers.nginx_server import nginx_server
+from auth.auth_user import login_check
 
 logs = loglog()
 log = logs.logger
 
 app = Flask(__name__)
-
+app.config['SECRET_KEY'] = 'AXxhDYONkOI2-FsnBrQ0FLcpGq43uWAclf6Vp3V8_bU'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 re=msg()
 
 @app.route('/index')
@@ -28,6 +33,19 @@ re=msg()
 @app.route('/')
 def hello_world():
     return render_template('login.html')
+@app.route('/login',methods=['POST','GET'])
+def login_login():
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.get_data())
+            sessions["user"] = data["user"]
+            sessions["passwd"] = data['passwd']
+            return redirect('/home',200)
+        except Exception as e:
+            result = re.getmsg(100)
+            return result
+    remsg = re.getmsg(10)
+    return json.dumps(re.msg(remsg))
 
 @app.route('/home')
 def sslfrom():
@@ -93,14 +111,12 @@ def dns_validation():
             validation_result = ssl_v2.dns_validation(txt,domains,challeng_link,auth_link)
             if validation_result is True:
                 cert = ssl_v2.get_cert()
-                return cert
-                '''
-                补齐nginx配置文件修改，并重启nginx服务，使配置生效。需做判断如出现配置错误回滚配置，并返回提示！
-                '''
-                nginx_status = ''
-                if nginx_status != None:
+                nginx = nginx_server()
+                nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
+                nginx_status = nginx.restart_nginx_to_effective()
+                if nginx_status == None:
                     result = re.getmsg(0)
-                    result['msg'] = nginx_status
+                    result['msg'] = cert
                     return json.dumps(result)
                 else:
                     remsg = re.getmsg(10015)
@@ -120,6 +136,69 @@ def dns_validation():
 def forget_password():
     return render_template('forget_password.html')
 
+@app.route('/get_Anti_seal_site_info',methods=['POST','GET'])
+def get_Anti_seal_site_info():
+    from DBL._sys_config import sys_config
+    sys_dates = sys_config()
+    sys_conf_info = sys_dates.get_collection_all()
+    result = re.getmsg(0)
+    result['msg'] = sys_conf_info
+    return json.dumps(result)
+
+# @app.route('logout',methods=['POST'])
+# def logout():
+#     if request.method != 'POST':
+#         remsg = re.getmsg(10015)
+#         return json.dumps(re.msg(remsg))
+#     else:
+#         return ''
+
+@app.route('/name_list',methods=['POST','GET'])
+def server_name_list():
+    from DBL._sys_config import sys_config
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+    sys_obj = sys_config()
+    result_txt = ''
+    tilte = '''
+        <table style="width:1000px; margin: auto; margin-top: 100px; border-bottom: darkgrey 1px solid; ">
+            <tr style="background-color:darkseagreen; text-align: center; ">
+                <td>ID</td>
+                <td>名称</td>
+                <td>地址</td>
+                <td>操作</td>
+            </tr>
+        '''
+    footer = '''
+        </table>
+    '''
+    sys = sys_obj.server_list()
+    for i in sys:
+        log.info(i["itemName"])
+        log.info(sys.index(i))
+        rs = '''
+            <tr>
+                <td style="border-bottom: darkgrey 1px solid; font-size: 14px;">%s</td>
+                <td style="border-bottom: darkgrey 1px solid; font-size: 14px;">%s</td>
+                <td style="border-bottom: darkgrey 1px solid; font-size: 14px;"><input type="text" style="width:400px" value = %s></td>
+                <td style="border-bottom: darkgrey 1px solid; text-align: center; font-size: 14px;"><input type="button" value = "更换" onclick='update_domain(%s)'></td>
+            </tr>
+            '''%(i["_id"],i["itemName"],i["itemVal"],json.dumps(i))
+        result_txt +=rs
+
+        js = '''
+            <script>
+                
+                function update_domain(str){
+                    //const data = JSON.parse(str);
+                    console.log('打印：', str);
+                }
+            </script>
+        '''
+
+    res = tilte+result_txt+footer+js
+    return res
 
 
 if __name__ == '__main__':
