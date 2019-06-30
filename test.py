@@ -98,12 +98,28 @@
 # import base64
 # print base64.urlsafe_b64encode(hashlib.sha256(str(time.time())).digest()).decode('utf-8').rstrip("=")
 
-from DBL._sys_config import sys_config
-sys_obj = sys_config()
+# from DBL._sys_config import sys_config
+# sys_obj = sys_config()
+#
+# sys = sys_obj.get_collection_all()
+# server_list = []
+# for i in sys:
+#     server_list.append(i)
+#
+# print (server_list)
 
-sys = sys_obj.get_collection_all()
-server_list = []
-for i in sys:
-    server_list.append(i)
+import os
+import re
+path = '/etc/nginx/sites-enabled/'
+itmes = os.listdir(path)
+old_domain = 'hzqp777.com'
+domain = 'haoshunjinrong.com'
+for i in itmes:
+    with open('%s%s'%(path,i),'rt')as f:
+        data = f.readlines()
+        for i in data:
+            if re.search('#',i) == None:
+                if re.search(old_domain,i):
+                    i.replace(old_domain,domain)
 
-print server_list
+

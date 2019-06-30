@@ -13,10 +13,10 @@
 
 import requests
 import json
-import myhelper
 import os,time
 from base.mylog import loglog
 from base import basemethod
+from ACME import myhelper
 
 
 class ssl_cert_v2:
@@ -134,7 +134,7 @@ class ssl_cert_v2:
             self.log.error(error)
 
         if resp.status_code < 200 or resp.status_code >= 300:
-            print resp.reason
+            print (resp.reason)
             self.log.error('Error calling ACME endpoint:%s'%resp.reason)
             self.log.error('Status Code:%s'%resp.status_code)
         else:

@@ -18,7 +18,7 @@ class loglog:
     logfilename = './logs/ssl_apply.log'
 
     if not os.path.exists('logs'):
-        os.makedirs("logs", 0777)
+        os.makedirs("logs",mode=0o777)
     else:
         if not os.path.exists(logfilename):
             f = open(logfilename, 'w+')

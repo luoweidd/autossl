@@ -16,11 +16,14 @@ import os
 class nginx_server:
 
     conf_dir = '/etc/nginx/conf.d/'
+    conf_dir_ = '/etc/nginx/sites-enabled/'
 
 
-    def get_conf_itme(self):
-        items = os.listdir(self.conf_dir)
-        return items
+    def get_conf_itme(self,conf_path):
+        items = os.listdir(conf_path)
+        if len(items) > 0 or items != None:
+            return items
+        return None
 
     def get_conf_path(self,keyword,path):
         pass

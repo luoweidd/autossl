@@ -6,7 +6,7 @@
 # @Software: PyCharm
 # @Blog    ：http://……
 
-from mongodbl import mongoDBL
+from DBL.mongodbl import mongoDBL
 from base.mylog import loglog
 
 class sys_config:
@@ -20,7 +20,7 @@ class sys_config:
             self.cur = _mongoconnect.DBConect()
             self.collection="sys_config"
         except Exception as e:
-            print "连接错误，错误消息：%s"%e
+            self.log.error("连接错误，错误消息：%s"%e)
 
     def get_collection_all(self):
         try:
@@ -36,9 +36,9 @@ class sys_config:
             list_all.append(i)
         return list_all
 
-    def update_collection_all(self,Id,**kwargs):
+    def update_collection_all(self,Id,itemVal):
         try:
-            collec = self.cur.get_collection(self.collection).update_one({"_id":Id},kwargs)
+            collec = self.cur.get_collection(self.collection).update_one({"_id":Id},{set,{"itemVal":itemVal}})
             return collec
         except Exception as e:
              self.log.error("更新%s数据错误，错误消息：%s"%(self.collection,e))

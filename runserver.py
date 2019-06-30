@@ -156,9 +156,6 @@ def get_Anti_seal_site_info():
 @app.route('/name_list',methods=['POST','GET'])
 def server_name_list():
     from DBL._sys_config import sys_config
-    import sys
-    reload(sys)
-    sys.setdefaultencoding('utf8')
     sys_obj = sys_config()
     result_txt = ''
     tilte = '''
@@ -176,30 +173,72 @@ def server_name_list():
     sys = sys_obj.server_list()
     for i in sys:
         log.info(i["itemName"])
-        log.info(sys.index(i))
         rs = '''
             <tr>
                 <td style="border-bottom: darkgrey 1px solid; font-size: 14px;">%s</td>
                 <td style="border-bottom: darkgrey 1px solid; font-size: 14px;">%s</td>
                 <td style="border-bottom: darkgrey 1px solid; font-size: 14px;"><input type="text" style="width:400px" value = %s></td>
-                <td style="border-bottom: darkgrey 1px solid; text-align: center; font-size: 14px;"><input type="button" value = "更换" onclick='update_domain(%s)'></td>
+                <td style="border-bottom: darkgrey 1px solid; text-align: center; font-size: 14px;"><input type="button" value = "更换" onclick='update_domain(this)'></td>
             </tr>
-            '''%(i["_id"],i["itemName"],i["itemVal"],json.dumps(i))
+            '''%(i["_id"],i["itemName"],i["itemVal"])
         result_txt +=rs
 
         js = '''
             <script>
                 
-                function update_domain(str){
-                    //const data = JSON.parse(str);
-                    console.log('打印：', str);
+                function update_domain(obj){
+                    var objs = obj.parentNode;
+                    var id =  objs.parentNode.children[0].innerHTML;
+                    var itemVal = objs.parentNode.children[2].children[0].value;
+                    var data = {"id":id,"itemVal":itemVal};
+                    $.ajax({
+                        url:"/update_name_server",
+                        type:'POST',
+                        dataType:'json',
+                        beforeSend:function(){
+                            var load = $("#loading")
+                            load[0].style.visibility="visible"
+                            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+                            },
+                        success:function(result){
+                            var res=JSON.parse(result)
+                            if (res.msg == 'ok'){
+                                window.location.reload();
+                            }
+                            else{
+                                var load = $("#loading")
+                                load[0].style.visibility="visible";
+                                var res=JSON.parse(result)
+                                $("#loading").htlm(result.msg);
+                            }
+                            
+                        },
+                        messageerror:function (result) {
+                            var load = $("#loading")
+                            load[0].style.visibility="visible";
+                            var res=JSON.parse(result)
+                            $("#loading").htlm(result.msg);
+                        }
                 }
             </script>
         '''
-
-    res = tilte+result_txt+footer+js
+    div = '''<div id="loading" style="visibility:"hidden""></div>'''
+    res = tilte+result_txt+footer+js+div
     return res
 
+@app.route('/update_name_server',methods=['POST','GET'])
+def update_name_server():
+    if request.method != 'POST':
+        data = request.get_data()
+        data = json.loads(data)
+        '''
+            补齐
+        '''
+        result = re.getmsg(0)
+        result["msg"] = "ok"
+        return json.dumps(result)
+    result = re.getmsg(10011)
+    return json.dumps(result)
 
 if __name__ == '__main__':
     app.run()

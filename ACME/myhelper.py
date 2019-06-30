@@ -26,7 +26,7 @@ def b64(b):
 	try:
 		return base64.urlsafe_b64encode(b).decode("utf8").rstrip("=")
 	except Exception as e:
-		print e
+		log.error(e)
 		return None
 
 # helper function to run openssl command
@@ -107,7 +107,7 @@ def load_private_key(keyfile):
 
 		return pkey
 	except IOError as e:
-		print e
+		log.error(e)
 		return None
 
 def int2hex(val):
@@ -128,7 +128,7 @@ def get_public_key_from_private_key(pkey):
 		exp = int2hex(private_key_der[2])
 		return modulus, exp
 	except TypeError as e:
-		print e
+		log.error(e)
 		return None
 
 def get_jwk(file):
@@ -147,7 +147,7 @@ def get_jwk(file):
 		}
 		return jwk
 	except Exception as e:
-		print e
+		log.error(e)
 		return None
 
 def JWK_Thumbprint(key_dict):
@@ -217,7 +217,7 @@ def create_domains_csr(KEY_FILE, CSR_FILE, domainName, emailAddress):
 	with open(CSR_FILE, 'wt') as f:
 		data = OpenSSL.crypto.dump_certificate_request(OpenSSL.crypto.FILETYPE_PEM, csr_cert)
 		f.write(data.decode('utf-8'))
-        return True
+		return True
 
 def dns_query(domain):
 	try:
