@@ -10,7 +10,7 @@
  * Time: 下午2:01
 '''
 
-from flask import Flask,request,redirect,render_template
+from flask import Flask,request,redirect,render_template,current_app
 from flask import sessions
 from base.msgdict import msg
 from ACME.ssl_cert_apply_v2 import ssl_cert_v2
@@ -20,13 +20,19 @@ from datetime import timedelta
 from servsers.nginx_server import nginx_server
 from auth.auth_user import login_check
 
+
 logs = loglog()
 log = logs.logger
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'AXxhDYONkOI2-FsnBrQ0FLcpGq43uWAclf6Vp3V8_bU'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+
 re=msg()
+
+@app.route('/favicon.ico')
+def favicon():
+    return current_app.send_static_file("images/favicon.ico")
 
 @app.route('/index')
 @app.route('/login')
@@ -68,7 +74,7 @@ def applyssl():
             remsg = re.getmsg(10015)
             return json.dumps(re.msg(remsg))
     else:
-        remsg=re.getmsg(10015)
+        remsg=re.getmsg(10011)
         return json.dumps(re.msg(remsg))
 
 @app.route('/account_form_info',methods=['GET'])
@@ -97,8 +103,8 @@ def account_order():
     account_orders = ssl_cert_obj.old_order()
     return account_orders
 
-@app.route('/dns_validation',methods=["POST"])
-def dns_validation():
+@app.route('/new_site_dns_validation',methods=["POST"])
+def new_site_dns_validation():
     if request.method =='POST':
         data = request.get_data()
         data = eval(data)
@@ -129,7 +135,7 @@ def dns_validation():
             remsg = re.getmsg(10015)
             return json.dumps(re.msg(remsg))
     else:
-        remsg = re.getmsg(10015)
+        remsg = re.getmsg(10011)
         return json.dumps(re.msg(remsg))
 
 @app.route('/forget_password',methods=["POST","GET"])
@@ -157,86 +163,67 @@ def get_Anti_seal_site_info():
 def server_name_list():
     from DBL._sys_config import sys_config
     sys_obj = sys_config()
-    result_txt = ''
-    tilte = '''
-        <table style="width:1000px; margin: auto; margin-top: 100px; border-bottom: darkgrey 1px solid; ">
-            <tr style="background-color:darkseagreen; text-align: center; ">
-                <td>ID</td>
-                <td>名称</td>
-                <td>地址</td>
-                <td>操作</td>
-            </tr>
-        '''
-    footer = '''
-        </table>
-    '''
     sys = sys_obj.server_list()
-    for i in sys:
-        log.info(i["itemName"])
-        rs = '''
-            <tr>
-                <td style="border-bottom: darkgrey 1px solid; font-size: 14px;">%s</td>
-                <td style="border-bottom: darkgrey 1px solid; font-size: 14px;">%s</td>
-                <td style="border-bottom: darkgrey 1px solid; font-size: 14px;"><input type="text" style="width:400px" value = %s></td>
-                <td style="border-bottom: darkgrey 1px solid; text-align: center; font-size: 14px;"><input type="button" value = "更换" onclick='update_domain(this)'></td>
-            </tr>
-            '''%(i["_id"],i["itemName"],i["itemVal"])
-        result_txt +=rs
+    return render_template('server_list_form.html',res=sys)
 
-        js = '''
-            <script>
-                
-                function update_domain(obj){
-                    var objs = obj.parentNode;
-                    var id =  objs.parentNode.children[0].innerHTML;
-                    var itemVal = objs.parentNode.children[2].children[0].value;
-                    var data = {"id":id,"itemVal":itemVal};
-                    $.ajax({
-                        url:"/update_name_server",
-                        type:'POST',
-                        dataType:'json',
-                        beforeSend:function(){
-                            var load = $("#loading")
-                            load[0].style.visibility="visible"
-                            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
-                            },
-                        success:function(result){
-                            var res=JSON.parse(result)
-                            if (res.msg == 'ok'){
-                                window.location.reload();
-                            }
-                            else{
-                                var load = $("#loading")
-                                load[0].style.visibility="visible";
-                                var res=JSON.parse(result)
-                                $("#loading").htlm(result.msg);
-                            }
-                            
-                        },
-                        messageerror:function (result) {
-                            var load = $("#loading")
-                            load[0].style.visibility="visible";
-                            var res=JSON.parse(result)
-                            $("#loading").htlm(result.msg);
-                        }
-                }
-            </script>
-        '''
-    div = '''<div id="loading" style="visibility:"hidden""></div>'''
-    res = tilte+result_txt+footer+js+div
-    return res
-
-@app.route('/update_name_server',methods=['POST','GET'])
+@app.route('/update_name_server',methods=['POST'])
 def update_name_server():
     if request.method != 'POST':
         data = request.get_data()
         data = json.loads(data)
-        '''
-            补齐
-        '''
-        result = re.getmsg(0)
-        result["msg"] = "ok"
-        return json.dumps(result)
+        if data["id"] is True or data["itemVal"] is True:
+            domain = '*%s'%(data["itemVal"])
+            import requests
+            try:
+                resp = requests.post('/applyssl',domain)
+            except requests.RequestException as e:
+                log.error(e)
+            except Exception as  e:
+                log.error(e)
+            if resp.status_code < 200 or resp.status_code >= 300:
+                log.error('Error requst applyssl endpoint:%s' % resp.reason)
+                log.error('Status Code:%s' % resp.status_code)
+                return "System error, please contact the system administrator!"
+            else:
+                result = re.getmsg(0)
+                res = json.loads(resp)
+                res = res["msg"].append(data)
+                result["msg"] = res
+                return json.dumps(result)
+    result = re.getmsg(10011)
+    return json.dumps(result)
+
+@app.route('/update_name_server_validation',methods=['POST'])
+def update_name_server_validation():
+    if request.method != 'POST':
+        data = request.get_data()
+        data = eval(data)
+        domains = [data[0]]
+        ssl_v2 = ssl_cert_v2()
+        auth_link = data[1]
+        challeng_link = data[2]
+        txt = data[3]
+        if auth_link != None:
+            validation_result = ssl_v2.dns_validation(txt, domains, challeng_link, auth_link)
+            if validation_result is True:
+                cert = ssl_v2.get_cert()
+                from contrllo.update_name_server_contrllo import update_name_server_contrllo
+                update_name_server_status = update_name_server_contrllo()
+                update_status = update_name_server_status.update_contrllor()
+                if update_status == None or update_status == 'ok' :
+                    result = re.getmsg(0)
+                    result['msg'] = cert
+                    return json.dumps(result)
+                else:
+                    remsg = re.getmsg(10015)
+                    return json.dumps(re.msg(remsg))
+            else:
+                result = re.getmsg(10015)
+                result['msg'] = validation_result
+                return json.dumps(result)
+        else:
+            remsg = re.getmsg(10015)
+            return json.dumps(re.msg(remsg))
     result = re.getmsg(10011)
     return json.dumps(result)
 

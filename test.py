@@ -122,4 +122,5 @@ for i in itmes:
                 if re.search(old_domain,i):
                     i.replace(old_domain,domain)
 
+domian = ''
 

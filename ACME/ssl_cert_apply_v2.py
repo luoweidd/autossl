@@ -69,6 +69,12 @@ class ssl_cert_v2:
             myhelper.create_rsa_private_key(self.AccountKeyFile)
 
     def data_packaging(self,payload,body_top):
+        '''
+        ACME Request Header Encapsulation.
+        :param payload: Valid request data after Base64 encoding.
+        :param body_top:ACME Request Protocol Content Encoded by Base64.
+        :return: Base64 encoding data content.
+        '''
         payload_b64 = myhelper.b64(json.dumps(payload).encode("utf8"))
         body_top_b64 = myhelper.b64(json.dumps(body_top).encode("utf8"))
         # Create the message digest (signature)
@@ -82,6 +88,10 @@ class ssl_cert_v2:
         return jose
 
     def new_account(self):
+        '''
+        Create new account key ,create new account.
+        :return: create result.
+        '''
         self.check_account_key_file()
         new_accuount = self.get_directory()
         accuount_url = new_accuount[self.account_path]
@@ -116,6 +126,10 @@ class ssl_cert_v2:
             return "System error, please contact the system administrator!"
 
     def get_account_url(self):
+        '''
+        Get account request url.
+        :return: account url.
+        '''
         dir_noce=self.get_directory()
         # Create the account request
         payload = {"termsOfServiceAgreed": True, "contact": self.EmailAddresses}
@@ -152,6 +166,10 @@ class ssl_cert_v2:
                 return "System error, please contact the system administrator!"
 
     def get_account_info(self):
+        '''
+        Get account info
+        :return: account info
+        '''
         self.check_account_key_file()
         """ Get the Account Information """
         accounts=self.get_account_url()
@@ -209,6 +227,10 @@ class ssl_cert_v2:
             return info
 
     def account_update(self):
+        '''
+        account update.
+        :return: update result.
+        '''
         accounts=self.get_account_url()
         # Create the account request
         payload = {"contact": self.EmailAddresses}
@@ -233,7 +255,11 @@ class ssl_cert_v2:
             return info
 
     def new_order(self,domain):
-        """ Request an SSL certificate from the ACME server """
+        '''
+        Create new order.
+        :param domain: domain, type:list, But support a domain name
+        :return: order info.
+        '''
         if domain != None:
             domain_dir = myhelper.DomainDewildcards(domain[0])
             key_name = '%s%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
@@ -271,6 +297,10 @@ class ssl_cert_v2:
 
 
     def old_order(self):
+        '''
+        Abandoned or not yet implemented.
+        :return:
+        '''
         accounts = self.get_account_url()
         self.log.info("Request to the ACME server an order to validate domains.")
         order_url = '%s/%s'%(accounts[1],self.account_order)
@@ -294,6 +324,11 @@ class ssl_cert_v2:
         return resp
 
     def get_auth(self,order_info):
+        '''
+        Get auth link
+        :param order_info:
+        :return: auth link
+        '''
         if order_info != None:
             try:
                 resp = requests.get(order_info, headers=self.headers)
@@ -315,6 +350,11 @@ class ssl_cert_v2:
         return None
 
     def get_challenges(self,auth_link):
+        '''
+        Get challenge link
+        :param auth_link:
+        :return: challenge link
+        '''
         try:
             resp = requests.get(auth_link[0], headers=self.headers)
         except requests.exceptions.RequestException as error:
@@ -334,10 +374,15 @@ class ssl_cert_v2:
     def join_Char(self,one,two):
         return "{0}.{1}".format(one, two)
 
-    def dns_auth_info(self,auth_info):
-        if auth_info != None:
+    def dns_auth_info(self,order_info):
+        '''
+        Request authentication information according to the order information list.
+        :param order info:
+        :return: dns validation name,txt value,auth info,challgen link, txt,name
+        '''
+        if order_info != None:
             LABLE = "_acme-challenge"
-            challenge = self.get_challenges(auth_info["authorizations"])
+            challenge = self.get_challenges(order_info["authorizations"])
             if challenge != None and challenge["identifier"] and challenge["challenges"]:
                 domain_name = challenge["identifier"]["value"]
                 token=challenge["challenges"][0]["token"]
@@ -345,12 +390,20 @@ class ssl_cert_v2:
                 keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
                 TXT = myhelper.b64(myhelper.hash_256_digest(keyAuthorization))
                 name = self.join_Char(LABLE, domain_name)
-                return ["DNS 解析名称: %s 解析类型: TXT 解析值: %s <br> 等待解析生效，可用nslookup ——> set type=txt ———> %s 命令查看是否生效，如果查询值等于此处TXT值，即生效，即可点击验证执行证书下发。<br>" %(name,TXT),json.dumps(auth_info),challenge["challenges"][0]["url"],TXT,name]
+                return ["DNS 解析名称: %s 解析类型: TXT 解析值: %s <br> 等待解析生效，可用nslookup ——> set type=txt ———> %s 命令查看是否生效，如果查询值等于此处TXT值，即生效，即可点击验证执行证书下发。<br>" %(name,TXT),json.dumps(order_info),challenge["challenges"][0]["url"],TXT,name]
             self.log.error("[Error]: DNS auth error, data request exception.")
         return "System error, please contact the system administrator!"
 
 
     def dns_validation(self,TXT,domain,challenge,auth):
+        '''
+        DNS certificate verification request.
+        :param TXT: dns challenge vlaue type:base64 string
+        :param domain: domain type：string
+        :param challenge: challenge link
+        :param auth: author info
+        :return: Validation results, if validation successfully returns the certificate finalize link address.
+        '''
         domain = domain[0].split("*")[1]
         domain = '_acme-challenge%s' % domain
         for i in range(1,60):
@@ -373,6 +426,11 @@ class ssl_cert_v2:
             return 'DNS validation failed.info：%s'%dns_query
 
     def dns_challenge(self,challenge_link):
+        '''
+        DNS challenge confirmation request.
+        :param challenge_link: challenge link
+        :return: challenge result.
+        '''
         if challenge_link != None:
             new_accuount = self.get_directory()
             nonce = self.get_nonce(new_accuount[self.nonec_path])
@@ -402,6 +460,11 @@ class ssl_cert_v2:
         return "System error, please contact the system administrator!"
     
     def finalize(self,order_info):
+        '''
+        Confirm that the order is completed.
+        :param order_info: order info
+        :return: certificate download link
+        '''
         if order_info != None:
             order_info = json.loads(order_info)
             domain = order_info["identifiers"][0]["value"]
@@ -434,6 +497,11 @@ class ssl_cert_v2:
         return "System error, please contact the system administrator!"
 
     def get_cert(self,cert_down):
+        '''
+        Get the certificate, write to the development document, return the certificate to save energy, and return the content of the certificate.
+        :param cert_down: certificate download link
+        :return: return the certificate content.
+        '''
         if cert_down != None or cert_down != "System error, please contact the system administrator!" or cert_down["status"] == "valid" and cert_down["certificate"]:
             self.headers.update({"Accept":"application/pem-certificate-chain"})
             try:
