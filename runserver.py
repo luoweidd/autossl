@@ -62,7 +62,7 @@ def applyssl():
     if request.method =='POST':
         data = request.get_data()
         ssl_Cert = ssl_cert_v2()
-        domains = [data]
+        domains = [data.decode('utf-8')]
         order = ssl_Cert.new_order(domains)
         get_auth = ssl_Cert.get_auth(order)
         get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
@@ -115,7 +115,7 @@ def new_site_dns_validation():
         txt = data[3]
         if auth_link != None:
             validation_result = ssl_v2.dns_validation(txt,domains,challeng_link,auth_link)
-            if validation_result is True:
+            if validation_result or validation_result != None:
                 cert = ssl_v2.get_cert()
                 nginx = nginx_server()
                 nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
@@ -168,34 +168,49 @@ def server_name_list():
 
 @app.route('/update_name_server',methods=['POST'])
 def update_name_server():
-    if request.method != 'POST':
+    if request.method == 'POST':
         data = request.get_data()
-        data = json.loads(data)
-        if data["id"] is True or data["itemVal"] is True:
-            domain = '*%s'%(data["itemVal"])
-            import requests
-            try:
-                resp = requests.post('/applyssl',domain)
-            except requests.RequestException as e:
-                log.error(e)
-            except Exception as  e:
-                log.error(e)
-            if resp.status_code < 200 or resp.status_code >= 300:
-                log.error('Error requst applyssl endpoint:%s' % resp.reason)
-                log.error('Status Code:%s' % resp.status_code)
-                return "System error, please contact the system administrator!"
-            else:
-                result = re.getmsg(0)
-                res = json.loads(resp)
-                res = res["msg"].append(data)
-                result["msg"] = res
-                return json.dumps(result)
+        url = request.host_url
+        try:
+            data = json.loads(data)
+            if data["id"] or data["itemVal"]:
+                domain = '*%s'%(data["itemVal"])
+                import requests
+                try:
+                    resp = requests.post('%sapplyssl'%url,domain)
+                except requests.RequestException as e:
+                    log.error(e)
+                    result = re.getmsg(10013)
+                    result["msg"] = "System error, please contact the system administrator!"
+                    return json.dumps(result)
+                except Exception as  e:
+                    log.error(e)
+                    result = re.getmsg(10013)
+                    result["msg"] = "System error, please contact the system administrator!"
+                    return json.dumps(result)
+                if resp.status_code < 200 or resp.status_code >= 300:
+                    log.error('Error requst applyssl endpoint:%s' % resp.reason)
+                    log.error('Status Code:%s' % resp.status_code)
+                    result = re.getmsg(10013)
+                    result["msg"] = "System error, please contact the system administrator!"
+                    return json.dumps(result)
+                else:
+                    result = re.getmsg(0)
+                    res = json.loads(resp.text)
+                    res = res["msg"]
+                    res.append(data)
+                    result["msg"] = res
+                    return json.dumps(result)
+        except Exception as e:
+            log.error(e)
+            result = re.getmsg(100)
+            return json.dumps(result)
     result = re.getmsg(10011)
     return json.dumps(result)
 
 @app.route('/update_name_server_validation',methods=['POST'])
 def update_name_server_validation():
-    if request.method != 'POST':
+    if request.method == 'POST':
         data = request.get_data()
         data = eval(data)
         domains = [data[0]]
@@ -203,13 +218,15 @@ def update_name_server_validation():
         auth_link = data[1]
         challeng_link = data[2]
         txt = data[3]
+        db_ = data[4]
         if auth_link != None:
             validation_result = ssl_v2.dns_validation(txt, domains, challeng_link, auth_link)
-            if validation_result is True:
-                cert = ssl_v2.get_cert()
+            if validation_result or validation_result != None:
+                cert = validation_result
                 from contrllo.update_name_server_contrllo import update_name_server_contrllo
                 update_name_server_status = update_name_server_contrllo()
-                update_status = update_name_server_status.update_contrllor()
+                kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domian":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
+                update_status = update_name_server_status.update_contrllor(kwargs)
                 if update_status == None or update_status == 'ok' :
                     result = re.getmsg(0)
                     result['msg'] = cert

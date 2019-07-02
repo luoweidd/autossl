@@ -43,7 +43,7 @@ class nginx_server:
         if dir_itme != None:
             new_conf_dir_1_itme = []
             for i in dir_itme:
-                new_path = '%s%s'%(self.conf_path,i)
+                new_path = '%s%s'%(conf_path,i)
                 new_conf_dir_1_itme.append(new_path)
             return new_conf_dir_1_itme
 
@@ -55,11 +55,10 @@ class nginx_server:
         :param paths: path list
         :return: Data object with keyword file
         '''
-        for path in paths:
-            with open(path,'rt')as f:
-                data = f.readlines()
-                if keyword in data:
-                    return data
+        with open(paths,'rt')as f:
+            data = f.readlines()
+            if keyword in data:
+                return data
 
     def get_nginx_config(self,conf_file_date_obj):
         '''

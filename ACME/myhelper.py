@@ -166,7 +166,7 @@ def hash_256_digest(value):
 	:param value:String <type:string>
 	:return: hash256 digest
 	'''
-	digest = SHA256Hash(value).digest()
+	digest = SHA256Hash(value.encode('utf-8')).digest()
 	return digest
 
 def sign(data, keyfile):
@@ -229,6 +229,7 @@ def dns_query(domain):
 		log.error(e)
 
 def DomainDewildcards(domain):
+	domain = domain
 	import re
 	if re.match('^\*\.*.*', domain):
 		domained = re.sub('^\*\.', '', domain)
@@ -238,5 +239,5 @@ def DomainDewildcards(domain):
 
 def wirte_ssl_certificate(filename,content):
 	with open(filename,'wt')as f:
-		f.write(content.decode("utf-8"))
+		f.write(content)
 		return True

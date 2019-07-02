@@ -189,7 +189,8 @@ function update_domain(obj){
     var objs = obj.parentNode;
     var id =  objs.parentNode.children[0].innerHTML;
     var itemVal = objs.parentNode.children[2].children[0].value;
-    var data = {"id":id,"itemVal":itemVal};
+    var old_itemVal = objs.parentNode.children[2].children[0].alt;
+    var data = JSON.stringify({"id":id,"old_itemVal":old_itemVal,"itemVal":itemVal});
     $.ajax({
         url:"/update_name_server",
         type:'POST',
@@ -198,23 +199,27 @@ function update_domain(obj){
         beforeSend:function(){
             var load = $("#loading");
             load[0].style.visibility="visible";
-            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+            $("#loading").html("<img style='margin-top: 26%' src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
             },
         success:function(result){
-            //var res=JSON.parse(result);
+            // var res=JSON.parse(result);
+            console.log(result)
             var load = $("#loading");
             load[0].style.visibility="hidden";
-            //var res=JSON.parse(result);
-            var validation = $("#validation");
+            var validation = $("#validationres");
             validation[0].style.visibility ="visible";
-            validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 25%">'+result.msg+'</p>');
-            var validations = $("#dns_validation");
-            validations[0].style.visibility='visible'
-            validation[0].title = res.msg[1];
-            validation[0].alt = res.msg[2];
-            validation[0].label = res.msg[3];
+            validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 25%">'+result.msg[0]+'</p>');
             var close_window = $('#close_window');
             close_window[0].style.visibility='visible';
+            if (result.code <= 0){
+                var validations = $("#dns_validation");
+                validations[0].style.visibility='visible';
+                validations[0].title = result.msg[1];
+                validations[0].alt = result.msg[2];
+                validations[0].label = result.msg[3];
+                validations[0].txt =result.msg[5];
+                console.log(validations[0].txt);
+            };
 
         },
         messageerror:function (result) {
@@ -227,22 +232,23 @@ function update_domain(obj){
 }
 
 function old_site_dns_validation() {
-    var domains = $('.input-xxlarge').val();
     var auth_link = $("#dns_validation");
     var auth = auth_link[0].title.toString();
     var challenge = auth_link[0].alt.toString();
     var txt = auth_link[0].label.toString();
-    var data = JSON.stringify([domains,auth,challenge,txt])
+    var db_ = auth_link[0].txt;
+    var domains = db_["itemVal"];
+    var data = JSON.stringify([domains,auth,challenge,txt,db_]);
     $.ajax({
         url:"/update_name_server_validation",
         type:'POST',
-        dataType:'text',
+        dataType:'json',
         data:data,
-        beforeSend:function(){
-            var load = $("#loading")
-            load[0].style.visibility="visible"
-            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
-            },
+        // beforeSend:function(){
+        //     var load = $("#loading")
+        //     load[0].style.visibility="visible"
+        //     $("#loading").html("<img style='margin-top: 25%;' src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+        //     },
         success:function(result){
             // var load = $("#loading_1")
             // load[0].style.visibility="hidden";
@@ -271,6 +277,8 @@ function old_site_dns_validation() {
 function close_windows(){
     var meobj = $('#close_window');
     meobj[0].style.visibility='hidden';
-    var obj = $('#validation');
+    var obj = $('#validationres');
     obj[0].style.visibility='hidden';
+    var auth_buttom = $("#dns_validation");
+    auth_buttom[0].style.visibility = "hidden";
 }

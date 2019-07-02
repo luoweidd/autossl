@@ -19,7 +19,8 @@ class msg:
         {'code':100,'msgtyoe':'error','msg':'This request data type must be JSON'},
         {'code': 10010, 'msgtype': 'error', 'msg': 'Data type error, please pass in the correct data type according to the interface requirements'},
         {'code': 10011, 'msgtype': 'error', 'msg': 'Must POST method ,not support GET method'},
-        {'code': 10012, 'msgtype': 'error', 'msg': 'Unknown error, please contact the administrator'}
+        {'code': 10012, 'msgtype': 'error', 'msg': 'Unknown error, please contact the administrator'},
+        {'code': 10013, 'msgtype': 'error', 'msg': ''}
     ]
 
     def getmsg(self,code):

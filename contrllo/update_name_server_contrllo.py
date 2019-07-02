@@ -45,15 +45,15 @@ class update_name_server_contrllo:
         db_ = sys_db.update_collection_all(Id,itemVal)
         return db_
 
-    def update_contrllor(self,**kwargs):
+    def update_contrllor(self,kwargs):
         '''
         Update the nginx configuration and restart the service for the new configuration to take effect.
         If the new service configuration takes effect and there are no exceptions, the database configuration is updated.
         :param kwargs:Contains the database ID where the data is located, the new data value, and the old domain name that needs to be updated.
         :return:configuration result.
         '''
-        nginx_update_status = self.nginx_config_options(kwargs["old_domain"],kwargs["new_domain"],kwargs["new_pem"],kwargs["new_key"])
+        nginx_update_status = self.nginx_config_options(kwargs["old_domain"],kwargs["new_domian"],kwargs["new_pem"],kwargs["new_key"])
         if nginx_update_status == 'ok':
-            db_update_status = self.update_DB(kwargs['Id'],kwargs["itemVal"])
+            db_update_status = self.update_DB(kwargs['Id'],kwargs["new_domain"])
             return db_update_status
         return nginx_update_status

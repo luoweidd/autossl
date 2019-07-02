@@ -108,19 +108,32 @@
 #
 # print (server_list)
 
-import os
-import re
-path = '/etc/nginx/sites-enabled/'
-itmes = os.listdir(path)
-old_domain = 'hzqp777.com'
-domain = 'haoshunjinrong.com'
-for i in itmes:
-    with open('%s%s'%(path,i),'rt')as f:
-        data = f.readlines()
-        for i in data:
-            if re.search('#',i) == None:
-                if re.search(old_domain,i):
-                    i.replace(old_domain,domain)
+# import os
+# import re
+# path = '/etc/nginx/sites-enabled/'
+# itmes = os.listdir(path)
+# old_domain = 'hzqp777.com'
+# domain = 'haoshunjinrong.com'
+# for i in itmes:
+#     with open('%s%s'%(path,i),'rt')as f:
+#         data = f.readlines()
+#         for i in data:
+#             if re.search('#',i) == None:
+#                 if re.search(old_domain,i):
+#                     i.replace(old_domain,domain)
 
-domian = ''
+# domian = '.haoshunjinrong.com'
+# print(domian[1::])
 
+data =  {'Id': '159',
+         'old_domain': '.cssjl.com',
+         'new_domian': '.cssjl.com',
+         'new_pem': '/home/devops/文档/devops/autossl/certificate/m4w2b.cn/certificate.pem',
+         'new_key': '/home/devops/文档/devops/autossl/certificate/m4w2b.cn/privte.key'}
+from contrllo.update_name_server_contrllo import update_name_server_contrllo
+obj =update_name_server_contrllo()
+opt = obj.update_contrllor(data)
+if opt == 'ok':
+    db_update_status = obj.update_DB(data['Id'], data["new_domain"])
+    print(db_update_status)
+print(opt)
