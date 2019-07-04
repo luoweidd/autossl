@@ -125,15 +125,95 @@
 # domian = '.haoshunjinrong.com'
 # print(domian[1::])
 
-data =  {'Id': '159',
-         'old_domain': '.cssjl.com',
-         'new_domian': '.cssjl.com',
-         'new_pem': '/home/devops/文档/devops/autossl/certificate/m4w2b.cn/certificate.pem',
-         'new_key': '/home/devops/文档/devops/autossl/certificate/m4w2b.cn/privte.key'}
-from contrllo.update_name_server_contrllo import update_name_server_contrllo
-obj =update_name_server_contrllo()
-opt = obj.update_contrllor(data)
-if opt == 'ok':
-    db_update_status = obj.update_DB(data['Id'], data["new_domain"])
-    print(db_update_status)
-print(opt)
+# data =  {'Id': '159',
+#          'old_domain': '.cssjl.com',
+#          'new_domain': '.abcd.com',
+#          'new_pem': '/home/devops/文档/devops/autossl/certificate/m4w2b.cn/certificate.pem',
+#          'new_key': '/home/devops/文档/devops/autossl/certificate/m4w2b.cn/privte.key'}
+# from contrllo.update_name_server_contrllo import update_name_server_contrllo
+# obj =update_name_server_contrllo()
+# opt = obj.update_contrllor(data)
+# if opt == 'ok':
+#     db_update_status = obj.update_DB(data['Id'], data["new_domain"])
+#     print(db_update_status)
+# print(opt)
+
+# i = '    ssl_certificate   /etc/nginx/cert/certificate_sw41j.cn.pem;'
+# print(i.split(' ')[len(i.split(' '))-1].replace(';',''))
+
+# ###++++++++++++++++++++nginx config Resolve into a dictionary object.++++++++++++++++++++++
+#
+# path = '/etc/nginx/conf.d/ff.conf'
+# with open(path,'rt')as f:
+#     data = f.readlines()
+# import re
+# nodes = {}
+# node_name = 'server'
+# node_conut = 0
+# for i in data:
+#     i_n = i.replace('\n','')
+#     i_ = i_n.strip(' ')
+#     if re.match('^%s$'%node_name,i_):
+#         node = []
+#         node.append(i_)
+#         node_conut += 1
+#         node_ = '%s_%d'%(node_name,node_conut)
+#     elif re.match('{',i_):
+#         node.append(i_)
+#         continue
+#     elif re.match('}',i_):
+#         node.append(i_)
+#         nodes.update({node_:node})
+#         continue
+#     else:
+#         node.append(i_)
+#
+# conf = {}
+# for j in nodes:
+#     server = []
+#     for p in nodes[j]:
+#         h = p.split(' ')
+#         blank_count = h.count('')
+#         if blank_count >= 1:
+#             for n in range(0,blank_count):
+#                 h.remove('')
+#         conf_dict = {}
+#         if h == [] or h == None :
+#             continue
+#         elif len(h) > 2 and re.match('^location',h[0]) == None:
+#             conf_dict.update({h[0]: h[1::]})
+#             server.append(conf_dict)
+#         elif len(h) >1 and len(h) <= 2:
+#             conf_dict.update({h[0]: h[1]})
+#             server.append(conf_dict)
+#         elif re.match('^location',h[0]):
+#             string =''
+#             for e in h:
+#                 string += ' %s'%e
+#             server.append(string)
+#         else:
+#             server.append(h[0])
+#     conf.update({j:server})
+# # print(conf)
+#
+# ###++++++++++++++++++++nginx config Resolve into a dictionary object.++++++++++++++++++++++
+#
+# #+++++++++++++++++++++++++++++nginx configtion write config file++++++++++++++++++++++++++++
+#
+# string_buffer = ''
+# for i in conf:
+#     for j in conf[i]:
+#         if type(j) == dict:
+#             for n in j:
+#                 tmp = ''
+#                 if type(j[n]) == list:
+#                     for k in j[n]:
+#                         tmp += ' %s'%k
+#                     string_buffer += '    %s %s\n'%(n,tmp)
+#                 else:
+#                     string_buffer += '    %s %s\n'%(n,j[n])
+#         else:
+#             string_buffer += '%s\n'%j
+# print(string_buffer)
+# #+++++++++++++++++++++++++++++nginx configtion write config file++++++++++++++++++++++++++++
+

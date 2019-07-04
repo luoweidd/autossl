@@ -1,9 +1,5 @@
-var newscript = document.createElement('script');
-newscript.setAttribute('type','text/javascript');
-newscript.setAttribute('src','static/js/jquery-3.4.1.min.js');
-newscript.setAttribute('src','static/js/jquery.md5.js');
-var head = document.getElementsByTagName('head')[0];
-head.appendChild(newscript);
+document.write("<script src='static/js/jquery-3.4.1.min.js' type='text/javascript'></script>")
+document.write("<script src='static/js/jquery.md5.js' type='text/javascript'></script>")
 
 function loading_c() {
     var load = $("#loading");
@@ -13,7 +9,8 @@ function loading_c() {
 
 function submit_apply() {
     var data=$('.input-xxlarge').val();
-    $.ajax({
+    if(data != null && data != undefined && data != ""){
+        $.ajax({
         url:"/applyssl",
         type:'POST',
         dataType:'text',
@@ -43,7 +40,11 @@ function submit_apply() {
             var res=JSON.parse(result);
             $('.content').text(res.msg);
         }
-    });
+        });
+    }
+    else {
+        alert('请填写正确的域名！')
+    }
 }
 
 function new_site_dns_validation() {
@@ -132,55 +133,34 @@ function MsgAnalysis(msg) {
 }
 
 function login() {
-    var user= $("#user").text.toString();
-    var passwd=$("#passwd").text.toString();
-    var date = {"user":user,"passwd":$.md5(passwd)};
+    var user= $("#user")[0].value;
+    var passwd=$("#passwd")[0].value;
+    var data = JSON.stringify({"user":user,"passwd":$.md5(passwd)});
     $.ajax({
         url:"/login",
         type:'POST',
-        date:date,
+        data:data,
         dataType:'json',
-        beforeSend:function(){
-
-            },
         success:function(result){
-            var load = $("#loading")
-            load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
-        },
-        messageerror:function (result) {
-            var load = $("#loading");
-            load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
-        }
-    });
-}
+            var validation = $("#validationres");
+            validation[0].style.visibility ="visible";
+            validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg.result+'</p>');
+            var close_window = $('#close_window');
+            close_window[0].style.visibility='visible';
+            if (result.msg.redirectUrl !=undefined && result.msg.redirectUrl != null){
+                window.location.href = result.msg.redirectUrl;
+            }
+            else {
+                validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">系统错误，请联系管理员！</p>')
+            }
 
-function forget_password() {
-    var user= $("#user").text.toString();
-    var passwd=$("#passwd").text.toString()
-    $.ajax({
-        url:"/forget_password",
-        type:'POST',
-        dataType:'json',
-        beforeSend:function(){
-            var load = $("#loading")
-            load[0].style.visibility="visible"
-            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
-            },
-        success:function(result){
-            var load = $("#loading");
-            load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
         },
-        messageerror:function (result) {
-            var load = $("#loading");
-            load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+        error:function (result) {
+            var validation = $("#validationres");
+            validation[0].style.visibility ="visible";
+            validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+            var close_window = $('#close_window');
+            close_window[0].style.visibility='visible';
         }
     });
 }
@@ -281,4 +261,32 @@ function close_windows(){
     obj[0].style.visibility='hidden';
     var auth_buttom = $("#dns_validation");
     auth_buttom[0].style.visibility = "hidden";
+}
+function forget_password(){
+     window.location.href = '/forget_password'
+}
+
+function login_close_windows() {
+    var meobj = $('#close_window');
+    meobj[0].style.visibility='hidden';
+    var obj = $('#validationres');
+    obj[0].style.visibility='hidden';
+    var auth_buttom = $("#dns_validation");
+}
+
+function winform_new() {
+    var rigth_from = parent.$('#right_form');
+    rigth_from[0].src = '/apply_ssl_form';
+}
+
+function winform_update() {
+    var rigth_from = parent.$('#right_form');
+    rigth_from[0].src = '/name_list';
+}
+
+function logout(obj) {
+
+}
+function get_user(obj) {
+
 }

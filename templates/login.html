@@ -10,12 +10,16 @@
         <h1 class="login_h">acme-client_1.0</h1>
         <div class="login_div">
         <div class="login_content">用户名：<input id="user" type="text" alt="用户名"></div>
-        <div class="login_content">密&nbsp; &nbsp;码：<input id="passwd" type="password" alt="密码"></div>
+        <div class="login_content">密&nbsp;&nbsp;&nbsp;&nbsp;码：<input id="passwd" type="password" alt="密码"></div>
         <div class="login_content">
             <a href="#" class="froget_a" onclick="forget_password()">忘记密码</a>
             <input class="login_button" id="login" type="button" value="登  录" onclick="login()">
         </div>
     </div>
     </div>
+    <p id="close_window" style=" border: white 1px solid; z-index: 998; font-family:
+     'Times New Roman'; position: absolute; cursor: pointer; visibility: hidden; top: 10px; right: 60px; border-radius: 30px; background-color: white; font-size: xx-large" onclick="login_close_windows()">&nbsp;X&nbsp;</p>
+    <div  id="validationres" style="visibility:hidden; margin: auto; background-color: black; opacity: 0.9; position: fixed; top: -5px; text-align: center; width: 100%; height: 100%"></div>
+    <script rel="script" src="static/js/js.js"></script>
 </body>
 </html>

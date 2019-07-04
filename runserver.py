@@ -18,7 +18,7 @@ from base.mylog import loglog
 import json,datetime
 from datetime import timedelta
 from servsers.nginx_server import nginx_server
-from auth.auth_user import login_check
+from auth.auth_user import user,login_ceck
 
 
 logs = loglog()
@@ -29,62 +29,80 @@ app.config['SECRET_KEY'] = 'AXxhDYONkOI2-FsnBrQ0FLcpGq43uWAclf6Vp3V8_bU'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 
 re=msg()
+user_obj = user()
 
 @app.route('/favicon.ico')
 def favicon():
     return current_app.send_static_file("images/favicon.ico")
 
-@app.route('/index')
-@app.route('/login')
-@app.route('/')
-def hello_world():
-    return render_template('login.html')
+@app.route('/index',methods=['POST','GET'])
+@app.route('/',methods=['POST','GET'])
 @app.route('/login',methods=['POST','GET'])
 def login_login():
     if request.method == 'POST':
         try:
-            data = json.loads(request.get_data())
-            sessions["user"] = data["user"]
-            sessions["passwd"] = data['passwd']
-            return redirect('/home',200)
+            data =json.loads(request.get_data())
+            login_rsult = user_obj.login_validation(data)
+            if login_rsult == '登录成功':
+                redirectUrl = '%shome'%request.host_url
+                result = re.getmsg(0)
+                result['msg'] = {'status':200,'result':login_rsult,'redirectUrl':redirectUrl}
+                return json.dumps(result)
+            else:
+                result = re.getmsg(10013)
+                result['msg'] = login_rsult
+                return json.dumps(result)
         except Exception as e:
-            result = re.getmsg(100)
-            return result
-    remsg = re.getmsg(10)
-    return json.dumps(re.msg(remsg))
+            result = re.getmsg(10013)
+            result['msg'] = '%s'%e
+            return json.dumps(result)
+    return render_template('login.html')
 
+@login_ceck()
+@app.before_request
 @app.route('/home')
 def sslfrom():
     return render_template('applyform.html')
 
+@login_ceck()
+@app.before_request
 @app.route('/applyssl',methods=['POST','GET'])
 def applyssl():
     if request.method =='POST':
         data = request.get_data()
-        ssl_Cert = ssl_cert_v2()
-        domains = [data.decode('utf-8')]
-        order = ssl_Cert.new_order(domains)
-        get_auth = ssl_Cert.get_auth(order)
-        get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
-        if get_dns_auth != None:
-            result=re.getmsg(0)
-            result['msg']=get_dns_auth
-            return json.dumps(result)
-        else:
-            remsg = re.getmsg(10015)
-            return json.dumps(re.msg(remsg))
+        if data != '' or data != None:
+            ssl_Cert = ssl_cert_v2()
+            domains = [data.decode('utf-8')]
+            order = ssl_Cert.new_order(domains)
+            get_auth = ssl_Cert.get_auth(order)
+            get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
+            if get_dns_auth != None:
+                result=re.getmsg(0)
+                result['msg']=get_dns_auth
+                return json.dumps(result)
+            else:
+                remsg = re.getmsg(10015)
+                return json.dumps(re.msg(remsg))
+        remsg =re.getmsg(100)
+        return json.dumps(remsg)
     else:
         remsg=re.getmsg(10011)
         return json.dumps(re.msg(remsg))
 
+@login_ceck()
+@app.before_request
 @app.route('/account_form_info',methods=['GET'])
 def account_form_info():
     return render_template('account_info_form.html')
 
+@login_ceck()
+@app.before_request
 @app.route('/apply_ssl_form',methods=['GET'])
 def apply_ssl_form():
     return render_template('apply_ssl.html')
 
+@login_ceck()
+@app.before_request
 @app.route('/account_info_api',methods=["GET"])
 def account_info_api():
     ssl_accounts = ssl_cert_v2()
@@ -97,12 +115,16 @@ def account_info_api():
         res['msg']=result
         return json.dumps(res)
 
+@login_ceck()
+@app.before_request
 @app.route('/account_order',methods=["GET"])
 def account_order():
     ssl_cert_obj = ssl_cert_v2()
     account_orders = ssl_cert_obj.old_order()
     return account_orders
 
+@login_ceck()
+@app.before_request
 @app.route('/new_site_dns_validation',methods=["POST"])
 def new_site_dns_validation():
     if request.method =='POST':
@@ -138,10 +160,14 @@ def new_site_dns_validation():
         remsg = re.getmsg(10011)
         return json.dumps(re.msg(remsg))
 
+@login_ceck()
+@app.before_request
 @app.route('/forget_password',methods=["POST","GET"])
 def forget_password():
     return render_template('forget_password.html')
 
+@login_ceck()
+@app.before_request
 @app.route('/get_Anti_seal_site_info',methods=['POST','GET'])
 def get_Anti_seal_site_info():
     from DBL._sys_config import sys_config
@@ -151,14 +177,19 @@ def get_Anti_seal_site_info():
     result['msg'] = sys_conf_info
     return json.dumps(result)
 
-# @app.route('logout',methods=['POST'])
-# def logout():
-#     if request.method != 'POST':
-#         remsg = re.getmsg(10015)
-#         return json.dumps(re.msg(remsg))
-#     else:
-#         return ''
+@login_ceck()
+@app.before_request
+@app.route('/logout',methods=['POST'])
+def logout():
+    if request.method != 'POST':
+        remsg = re.getmsg(10015)
+        return json.dumps(re.msg(remsg))
+    else:
+        resutl = re.getmsg(10011)
+        return json.dumps(resutl)
 
+@login_ceck()
+@app.before_request
 @app.route('/name_list',methods=['POST','GET'])
 def server_name_list():
     from DBL._sys_config import sys_config
@@ -166,6 +197,8 @@ def server_name_list():
     sys = sys_obj.server_list()
     return render_template('server_list_form.html',res=sys)
 
+@login_ceck()
+@app.before_request
 @app.route('/update_name_server',methods=['POST'])
 def update_name_server():
     if request.method == 'POST':
@@ -208,6 +241,8 @@ def update_name_server():
     result = re.getmsg(10011)
     return json.dumps(result)
 
+@login_ceck()
+@app.before_request
 @app.route('/update_name_server_validation',methods=['POST'])
 def update_name_server_validation():
     if request.method == 'POST':
@@ -225,11 +260,15 @@ def update_name_server_validation():
                 cert = validation_result
                 from contrllo.update_name_server_contrllo import update_name_server_contrllo
                 update_name_server_status = update_name_server_contrllo()
-                kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domian":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
+                kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domain":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
                 update_status = update_name_server_status.update_contrllor(kwargs)
-                if update_status == None or update_status == 'ok' :
+                if update_status == None and update_status == 'ok' :
                     result = re.getmsg(0)
-                    result['msg'] = cert
+                    result['msg'] = '更换完成'
+                    return json.dumps(result)
+                elif update_status == '数据未做任何修改！但执行成功。':
+                    result = re.getmsg(0)
+                    result['msg'] = '数据未做任何修改！但执行成功。'
                     return json.dumps(result)
                 else:
                     remsg = re.getmsg(10015)

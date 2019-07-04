@@ -12,6 +12,8 @@
 from DBL._sys_config import sys_config
 from servsers.nginx_server import nginx_server
 from base.mylog import loglog
+from base.basemethod import url_extract_doain
+import re
 
 class update_name_server_contrllo:
 
@@ -24,25 +26,32 @@ class update_name_server_contrllo:
         for i in nginx_config_paths:
             nginx_config_paths_list = nginx_servers.get_conf_item_path(i)
             for j in nginx_config_paths_list:
-                nginx_config_data = nginx_servers.keyword_get_conf_path(old_domain,j)
-                if nginx_config_data != None:
-                    old_pem = nginx_servers.get_pem_and_key_path(nginx_config_data)[0]
-                    old_key = nginx_servers.get_pem_and_key_path(nginx_config_data)[1]
-                    new_domain_nginx_config_data = nginx_servers.update_config_data(old_domain,new_domain,nginx_config_data)
-                    new_pem_nginx_config_data = nginx_servers.update_config_data(old_pem,new_pem,new_domain_nginx_config_data)
-                    new_key_nignx_config_data = nginx_servers.update_config_data(old_key,new_key,new_pem_nginx_config_data)
-                    update_res = nginx_servers.update_nignx_config(new_key_nignx_config_data,j)
-                    self.log.info(update_res)
-                self.log.error('未读取到匹配的配置数据，请联系管理员检查。')
-                return '未读取到匹配的配置数据，请联系管理员检查。'
-        nginx_config_status = nginx_servers.nginx_conf_check()
-        if nginx_config_status == None:
-            nginx_server_status = nginx_servers.restart_nginx_to_effective()
-            return nginx_server_status
+                nginx_config_data = nginx_servers.read_config(j)
+                if len(nginx_config_data) > 1:
+                    remove_notes_comments = nginx_servers.remove_notes_comments(nginx_config_data)
+                    if remove_notes_comments != None:
+                        dict_nginx_conf = nginx_servers.get_nginx_config(remove_notes_comments)
+                        if dict_nginx_conf != None and re.match('%s;'%old_domain[1::],dict_nginx_conf['server_1'][3]["server_name"]) and re.match('\*\.%s;'%old_domain[1::],dict_nginx_conf["server_2"][3]['server_name']):
+                            dict_nginx_conf['server_2'][5]["ssl_certificate"] = '%s;'%new_pem
+                            dict_nginx_conf['server_2'][6]["ssl_certificate_key"] = '%s;'%new_key
+                            dict_nginx_conf['server_1'][3]["server_name"] = '%s;'%new_domain[1::]
+                            dict_nginx_conf["server_2"][3]['server_name'] = '*%s;'%new_domain
+                            new_conf_data = nginx_servers.nginx_config_write_buffer_fomat(dict_nginx_conf)
+                            update_res = nginx_servers.wirte_file_optertion(j,new_conf_data)
+                            self.log.error(update_res)
+                            if update_res != None:
+                                nginx_config_status = nginx_servers.nginx_conf_check()
+                                if nginx_config_status == None:
+                                    nginx_server_status = nginx_servers.restart_nginx_to_effective()
+                                    return nginx_server_status
+                                self.log.error('配置检查不通过，请通知管理员检查配置文件，以及系统。错误信息：%s'%nginx_config_status[1])
+                            return '更新配置文件错误。'
+            self.log.error('未读取到匹配的配置数据，请联系管理员检查。')
+            return '未读取到匹配的配置数据，请联系管理员检查。'
 
     def update_DB(self,Id,itemVal):
         sys_db = sys_config()
-        db_ = sys_db.update_collection_all(Id,itemVal)
+        db_ = sys_db.update_collection(Id,itemVal)
         return db_
 
     def update_contrllor(self,kwargs):
@@ -52,8 +61,13 @@ class update_name_server_contrllo:
         :param kwargs:Contains the database ID where the data is located, the new data value, and the old domain name that needs to be updated.
         :return:configuration result.
         '''
-        nginx_update_status = self.nginx_config_options(kwargs["old_domain"],kwargs["new_domian"],kwargs["new_pem"],kwargs["new_key"])
+        new_domain = url_extract_doain(kwargs['new_domain'])
+        old_domain = url_extract_doain(kwargs['old_domain'])
+        nginx_update_status = self.nginx_config_options(old_domain,new_domain,kwargs["new_pem"],kwargs["new_key"])
         if nginx_update_status == 'ok':
             db_update_status = self.update_DB(kwargs['Id'],kwargs["new_domain"])
-            return db_update_status
+            if db_update_status.modified_count > 0 or db_update_status.matched_count > 0:
+                return 'ok'
+            else:
+                return '数据未做任何修改！但执行成功。'
         return nginx_update_status

@@ -17,7 +17,7 @@ body {
 
 .bottom {
     width:80px; height:50px;
-    font-size: x-large;
+    font-size: x-large; background-color: darkseagreen;
     margin: 0px 0px 90px -10px;
 }
 
@@ -41,7 +41,7 @@ body {
     position: fixed; overflow-x: hidden;
 }
 
-.right_form {
+#right_form {
     width: 78.5%; height: 900px; margin: 0px 0px 0px 20.5%;
     position: fixed;
 }
@@ -118,4 +118,29 @@ body {
 .login_button {
     margin: -30px 0px 0px 170px; background-color: lightgrey; border-radius: 4px; width: 26%;
     height: 30%; vertical-align: middle;
+}
+
+.menu ul li {
+    font-family: "Times New Roman"; font-size: 18px; font-weight: revert;
+    list-style: none; height: 60px; background-color: darkseagreen;
+    text-align: center; line-height: 60px; margin-left: -60px;
+    border: 1px cadetblue solid; margin-top: 5px; cursor: pointer;
+}
+
+.menu ul li:hover {
+    font-family: "Times New Roman"; font-size: 16px; font-weight: unset; cursor: pointer;
+    list-style: none; height: 55px; background-color: lightgreen; margin-top: 5px;
+    text-align: center; line-height: 55px; margin-left: -60px; border: darkgrey 1.5px solid;
+}
+
+.menu ul li:active {
+    font-family: "Times New Roman"; font-size: 18px; font-weight: revert;
+    list-style: none; height: 60px; background-color: darkseagreen;
+    text-align: center; line-height: 60px; margin-left: -60px;
+    border: 1px cadetblue solid; margin-top: 5px; color: white;
+    cursor: pointer;
+}
+
+.herder {
+    float: right;
 }

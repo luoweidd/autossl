@@ -11,13 +11,13 @@
 '''
 
 import platform,subprocess,os,hashlib
-
+import re
 
 def get_os_info():
     return platform.linux_distribution()
 
 def CMD(command,check_name=None):
-    checkresult = subprocess.check_output('%s%s'%command,check_name)
+    checkresult = subprocess.getstatusoutput('%s %s'%(command,check_name))
     return checkresult
 
 def get_root_path():
@@ -37,3 +37,14 @@ def systemc_dir_flag():
 def MD5(value):
     md5_v = hashlib.md5(value).digest()
     return md5_v
+
+def url_extract_doain(url):
+    if re.match('^http'):
+        domain = re.sub('^http://','',url)
+        domain = domain.split('/')[0]
+        return domain
+    elif re.match('^https://'):
+        domain = re.sub('https://','',url)
+        domain = domain.split('/')[0]
+        return domain
+    else:return url

@@ -36,9 +36,10 @@ class sys_config:
             list_all.append(i)
         return list_all
 
-    def update_collection_all(self,Id,itemVal):
+    def update_collection(self,Id,itemVal):
         try:
-            collec = self.cur.get_collection(self.collection).update_one({"_id":Id},{set,{"itemVal":itemVal}})
+            collec = self.cur.get_collection(self.collection).update_one({"_id":int(Id)},{'$set':{"itemVal":itemVal}})
             return collec
         except Exception as e:
              self.log.error("更新%s数据错误，错误消息：%s"%(self.collection,e))
+             return

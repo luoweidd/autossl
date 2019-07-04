@@ -21,6 +21,22 @@ class nginx_server:
     logs = loglog()
     log = logs.logger
 
+    __doc__ = '''
+    This class provides two functions. One is to get the configuration file according to 
+    the parameters of the incoming path and convert it into a dictionary object. 
+    The other is to write the configuration file according to the input road 
+    strength parameters. Specifically:
+
+        The nginx configuration file excludes all annotated file data..
+
+
+        The nginx configuration object is converted and written to the configuration file. 
+        (Write the corresponding file according to the parameters of the incoming path. 
+        Note that the writing mode here is:'W+', so delete the original data writing.) 
+        Create a new write if the file is not pure.
+    '''
+
+
 
     def get_conf_itme(self,conf_path):
         '''
@@ -47,64 +63,136 @@ class nginx_server:
                 new_conf_dir_1_itme.append(new_path)
             return new_conf_dir_1_itme
 
-
-    def keyword_get_conf_path(self,keyword,paths):
+    def read_config(self,file_path):
         '''
-        Find documents according to key points.
-        :param keyword: keyword
-        :param paths: path list
-        :return: Data object with keyword file
+        read configtion files
+        :return: data
         '''
-        with open(paths,'rt')as f:
-            data = f.readlines()
-            if keyword in data:
-                return data
+        try:
+            with open(file_path,'rt')as f:
+                data = f.readlines()
+                if data != None:
+                    return data
+                return None
+        except Exception as e:
+            self.log.error(e)
+            return None
 
-    def get_nginx_config(self,conf_file_date_obj):
+    def remove_notes_comments(self,conf_file_date_obj):
         '''
         Delete configuration file comments.
         :param conf_file_date_obj:
         :return: no comments data
         '''
-        data = ''
+        data = []
         for i in conf_file_date_obj:
             import re
-            if re.match('#',i) == None:
-                data +=i
+            if re.search('#',i) == None:
+                data.append(i)
         return data
 
-    def get_pem_and_key_path(self,nginx_config_data):
-        old_pem_flag = 'ssl_certificate'
-        old_key_flage = 'ssl_certificate_key'
-        for i in nginx_config_data:
+    def get_nginx_config(self, data_buffer):
+        '''
+        Nginx configuration file data is parsed into dictionary objects.
+        :param data_buffer: Bufer after excluding comments
+        :return: dict or error
+        '''
+        try:
             import re
-            if re.match(old_pem_flag,i):
-                old_pem_path = i.split('')[1].split(";")[0]
-            elif re.match(old_key_flage,i):
-                old_key_path = i.split(""[1]).split("")[0]
-        return old_pem_path,old_key_path
+            nodes = {}
+            node_name = 'server'
+            node_conut = 0
+            for i in data_buffer:
+                i_n = i.replace('\n', '')
+                i_ = i_n.strip(' ')
+                if re.match('^%s$'%node_name, i_) or re.match('^%s {'%node_name, i_):
+                    node = []
+                    node.append(i_)
+                    node_conut += 1
+                    node_ = '%s_%d' % (node_name, node_conut)
+                elif re.match('{', i_):
+                    node.append(i_)
+                    continue
+                elif re.match('}', i_):
+                    node.append(i_)
+                    nodes.update({node_: node})
+                    continue
+                else:
+                    node.append(i_)
 
-    def update_config_data(self,new_content,old_content,repl_content):
-        import re
-        try:
-            res = re.sub('%s'%old_content,new_content,repl_content)
-            return res
+            conf = {}
+            for j in nodes:
+                server = []
+                for p in nodes[j]:
+                    h = p.split(' ')
+                    blank_count = h.count('')
+                    if blank_count >= 1:
+                        for n in range(0, blank_count):
+                            h.remove('')
+                    conf_dict = {}
+                    if h == [] or h == None:
+                        continue
+                    elif len(h) > 2 and re.match('^location', h[0]) == None:
+                        conf_dict.update({h[0]: h[1::]})
+                        server.append(conf_dict)
+                    elif len(h) > 1 and len(h) <= 2:
+                        conf_dict.update({h[0]: h[1]})
+                        server.append(conf_dict)
+                    elif re.match('^location', h[0]):
+                        string = ''
+                        for e in h:
+                            string += ' %s' % e
+                        server.append(string)
+                    else:
+                        server.append(h[0])
+                conf.update({j: server})
+            return conf
         except Exception as e:
-            self.log.error('ERROR:%s'%e)
+            self.log.error( 'Conversion error，error info：%s'%e)
+            return None
 
-    def update_nignx_config(self,conf_content,conf_name):
+    def nginx_config_write_buffer_fomat(self, config_object_data):
         '''
-        Update nginx configuration file.
-        :param conf_content:
-        :param conf_name:
-        :return: ''ok
+        nginx configtion write config file
+        :param config_object_data: file buffer
+        :return: ok or error
         '''
         try:
-            with open(conf_name,'wt')as f:
-                f.writelines(conf_content)
-                return 'ok'
+            string_buffer = ''
+            for i in config_object_data:
+                for j in config_object_data[i]:
+                    if type(j) == dict:
+                        for n in j:
+                            tmp = ''
+                            if type(j[n]) == list:
+                                for k in j[n]:
+                                    tmp += ' %s' % k
+                                string_buffer += '    %s %s\n' % (n, tmp)
+                            else:
+                                string_buffer += '    %s %s\n' % (n, j[n])
+                    else:
+                        string_buffer += '%s\n' % j
+            return string_buffer
         except Exception as e:
-            self.log.error('ERROR:%s'%e)
+            self.log.error( 'Wirte error,error info:%s' % e)
+            return None
+
+    def wirte_file_optertion(self, wirte_config_path, str_buffer):
+        '''
+        write opertion
+        :param wirte_config_path: /etc/nginx/conf.d/xxx.conf
+        :param str_buffer: Nginx recognizable format.
+        :return: ok or error
+        '''
+        if str_buffer != None:
+            try:
+                with open(wirte_config_path, 'w')as f:
+                    f.write(str_buffer)
+                    return 'ok'
+            except Exception as e:
+                self.log.error( 'Write file error, error info:%s' % e)
+                return None
+        return None
 
     def restart_nginx_to_effective(self):
         '''

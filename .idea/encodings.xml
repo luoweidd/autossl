@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
+  <component name="Encoding" native2AsciiForPropertiesFiles="true" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/ACME/helper.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ACME/myhelper.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ACME/myutils.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ACME/ssl_cert_apply_v1.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ACME/ssl_cert_apply_v2.py" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/runserver.py" charset="UTF-8" />
+    <file url="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydevd_bundle/pydevd_comm.py" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>

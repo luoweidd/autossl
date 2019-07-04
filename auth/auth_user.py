@@ -14,27 +14,16 @@ from base import basemethod
 from base.msgdict import msg
 
 
-def login_check(func):
-    res = msg()
-    @wraps(func)
-    def login():
-
-        User = user()
-        if sessions["user"] == User._User and sessions["passwd"] == User._Passwd:
-            result = func()
-            return result
-        else:
-            result = msg.getmsg(10)
-            return result
-    remsg = res.getmsg(11)
-    return res.msg(remsg)
+session_cookie = sessions.SecureCookieSession()
+res = msg()
+log = loglog.logger
 
 class user:
-    res = msg()
+
     _User = "admin"
-    _Passwd = "123456"
-    log = loglog.logger
-    session_cookie = sessions.SecureCookieSession()
+    _Passwd = "fba5b21c21c0c82d29645532680d7a20"
+    #_mwpasswd = 'J0oIJ1%$2'
+
 
     def init_user(self):
         pass
@@ -52,10 +41,27 @@ class user:
         passwd_md5 = basemethod.MD5(passwd)
         return passwd_md5
 
-    def login_validation(self):
-        pass
+    def login_validation(self,users):
+        if users != None or users != '':
+            if users['user'] == self._User and users['passwd'] == self._Passwd:
+                self.session_cookie['user'] = users['user']
+                return '登录成功'
+            return '用户名密码错误。'
+        return '用户名密码不能为空。'
 
-    def logout_clear(self):
-        pass
+    def logout_clear(self,user):
+        resutl = self.session_cookie.pop(user)
+        return resutl
+
+def login_ceck():
+    def ceck(func):
+        user = 'admin'
+        if user in session_cookie:
+            result = func()
+            return result
+    result = res.getmsg(10)
+    return json.dumps(result)
+
+
 
 

@@ -7,12 +7,16 @@
 </head>
 <body style="overflow-x: hidden;">
     <div style="width: 100%">
-        <script src="static/js/jquery-3.4.1.min.js"></script>
+        <div class="herder">
+            <label style="font-size: 14px" onload="get_user(this)"><a href="/login">请登录</a></label>
+            <input id="logout" style="visibility: hidden" type="button" value="注销" onclick="logout(this)">
+        </div>
+        <script src="static/js/jquery-3.4.1.min.js" rel="script"></script>
         <script src="static/js/js.js"></script>
         <iframe id="letf_form" name="right_form" onload="loader()" src="/account_form_info">
 
         </iframe>
-        <iframe class="right_form" name="right_form" src="/apply_ssl_form">
+        <iframe id="right_form" name="right_form" src="/apply_ssl_form">
         </iframe>
     </div>
     <div id="loading">
