@@ -142,6 +142,7 @@ function login() {
         data:data,
         dataType:'json',
         success:function(result){
+            //var result= JSON.parse(result)
             var validation = $("#validationres");
             validation[0].style.visibility ="visible";
             validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg.result+'</p>');
@@ -284,9 +285,22 @@ function winform_update() {
     rigth_from[0].src = '/name_list';
 }
 
-function logout(obj) {
-
-}
-function get_user(obj) {
-
+function logout() {
+    var th = $("#login_user_name");
+    var data = th[0].textContent;
+    $.ajax({
+        url: "/logout",
+        type: 'POST',
+        dataType: 'text',
+        data: data,
+        success: function (result) {
+            window.location.reload();
+        },
+        messageerror: function (result) {
+            var load = $("#loading");
+            load[0].style.visibility = "hidden";
+            var res = JSON.parse(result);
+            $('.validationres').text(res.msg);
+        }
+    });
 }

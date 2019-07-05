@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>申请SSL证书</title>
     <link rel="stylesheet" href="static/css/css.css">
 </head>
 <body style="overflow-x: hidden;">
+    <div class="herder">
+        欢迎&nbsp;&nbsp;<label id="login_user_name"  style="color: blue; font-size: 16px"> {{ user }} </label>
+        &nbsp;&nbsp;
+        <input id="logout" style="visibility: visible" type="button" value="注销" onclick="logout()">
+    </div>
     <div style="width: 100%">
-        <div class="herder">
-            <label style="font-size: 14px" onload="get_user(this)"><a href="/login">请登录</a></label>
-            <input id="logout" style="visibility: hidden" type="button" value="注销" onclick="logout(this)">
-        </div>
         <script src="static/js/jquery-3.4.1.min.js" rel="script"></script>
         <script src="static/js/js.js"></script>
         <iframe id="letf_form" name="right_form" onload="loader()" src="/account_form_info">

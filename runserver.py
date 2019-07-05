@@ -10,15 +10,15 @@
  * Time: 下午2:01
 '''
 
-from flask import Flask,request,redirect,render_template,current_app
-from flask import sessions
+from flask import Flask,request,redirect,render_template,current_app,url_for,Response
 from base.msgdict import msg
 from ACME.ssl_cert_apply_v2 import ssl_cert_v2
 from base.mylog import loglog
 import json,datetime
 from datetime import timedelta
 from servsers.nginx_server import nginx_server
-from auth.auth_user import user,login_ceck
+from auth.auth_user import user
+from ACME.myhelper import hash_256_digest,b64
 
 
 logs = loglog()
@@ -30,13 +30,21 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 
 re=msg()
 user_obj = user()
+session =user_obj.session_cookie
+
+@app.before_request
+def before_action():
+    if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1:
+        if request.path != '/login':
+            if 'user' not in session:
+                session['newurl']=request.path
+                return redirect(url_for('login_login'))
+
 
 @app.route('/favicon.ico')
 def favicon():
     return current_app.send_static_file("images/favicon.ico")
 
-@app.route('/index',methods=['POST','GET'])
-@app.route('/',methods=['POST','GET'])
 @app.route('/login',methods=['POST','GET'])
 def login_login():
     if request.method == 'POST':
@@ -44,10 +52,14 @@ def login_login():
             data =json.loads(request.get_data())
             login_rsult = user_obj.login_validation(data)
             if login_rsult == '登录成功':
+                time = datetime.datetime.now()
+                b64_hash256_time = b64(hash_256_digest(str(time)))
                 redirectUrl = '%shome'%request.host_url
                 result = re.getmsg(0)
                 result['msg'] = {'status':200,'result':login_rsult,'redirectUrl':redirectUrl}
-                return json.dumps(result)
+                respon = Response(json.dumps(result))
+                respon.set_cookie(data['user'],b64_hash256_time)
+                return respon
             else:
                 result = re.getmsg(10013)
                 result['msg'] = login_rsult
@@ -58,14 +70,11 @@ def login_login():
             return json.dumps(result)
     return render_template('login.html')
 
-@login_ceck()
-@app.before_request
 @app.route('/home')
 def sslfrom():
-    return render_template('applyform.html')
+    return render_template('applyform.html',user=session['user'])
 
-@login_ceck()
-@app.before_request
+
 @app.route('/applyssl',methods=['POST','GET'])
 def applyssl():
     if request.method =='POST':
@@ -89,20 +98,17 @@ def applyssl():
         remsg=re.getmsg(10011)
         return json.dumps(re.msg(remsg))
 
-@login_ceck()
-@app.before_request
+
 @app.route('/account_form_info',methods=['GET'])
 def account_form_info():
-    return render_template('account_info_form.html')
+    return render_template('account_info_form.html',user=session['user'])
 
-@login_ceck()
-@app.before_request
+
 @app.route('/apply_ssl_form',methods=['GET'])
 def apply_ssl_form():
     return render_template('apply_ssl.html')
 
-@login_ceck()
-@app.before_request
+
 @app.route('/account_info_api',methods=["GET"])
 def account_info_api():
     ssl_accounts = ssl_cert_v2()
@@ -115,16 +121,14 @@ def account_info_api():
         res['msg']=result
         return json.dumps(res)
 
-@login_ceck()
-@app.before_request
+
 @app.route('/account_order',methods=["GET"])
 def account_order():
     ssl_cert_obj = ssl_cert_v2()
     account_orders = ssl_cert_obj.old_order()
     return account_orders
 
-@login_ceck()
-@app.before_request
+
 @app.route('/new_site_dns_validation',methods=["POST"])
 def new_site_dns_validation():
     if request.method =='POST':
@@ -160,14 +164,12 @@ def new_site_dns_validation():
         remsg = re.getmsg(10011)
         return json.dumps(re.msg(remsg))
 
-@login_ceck()
-@app.before_request
+
 @app.route('/forget_password',methods=["POST","GET"])
 def forget_password():
-    return render_template('forget_password.html')
+    return render_template('forget_password.html',user=session['user'])
 
-@login_ceck()
-@app.before_request
+
 @app.route('/get_Anti_seal_site_info',methods=['POST','GET'])
 def get_Anti_seal_site_info():
     from DBL._sys_config import sys_config
@@ -177,19 +179,20 @@ def get_Anti_seal_site_info():
     result['msg'] = sys_conf_info
     return json.dumps(result)
 
-@login_ceck()
-@app.before_request
+
 @app.route('/logout',methods=['POST'])
 def logout():
-    if request.method != 'POST':
-        remsg = re.getmsg(10015)
-        return json.dumps(re.msg(remsg))
+    if request.method == 'POST':
+        user = request.get_data().decode('utf-8').strip(' ')
+        result = user_obj.logout_clear(user)
+        remsg = re.getmsg(0)
+        remsg["msg"] = result
+        return json.dumps(remsg)
     else:
         resutl = re.getmsg(10011)
         return json.dumps(resutl)
 
-@login_ceck()
-@app.before_request
+
 @app.route('/name_list',methods=['POST','GET'])
 def server_name_list():
     from DBL._sys_config import sys_config
@@ -197,8 +200,7 @@ def server_name_list():
     sys = sys_obj.server_list()
     return render_template('server_list_form.html',res=sys)
 
-@login_ceck()
-@app.before_request
+
 @app.route('/update_name_server',methods=['POST'])
 def update_name_server():
     if request.method == 'POST':
@@ -241,8 +243,7 @@ def update_name_server():
     result = re.getmsg(10011)
     return json.dumps(result)
 
-@login_ceck()
-@app.before_request
+
 @app.route('/update_name_server_validation',methods=['POST'])
 def update_name_server_validation():
     if request.method == 'POST':
@@ -284,4 +285,4 @@ def update_name_server_validation():
     return json.dumps(result)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0',port=5000,debug=True)

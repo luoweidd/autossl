@@ -216,4 +216,9 @@
 #             string_buffer += '%s\n'%j
 # print(string_buffer)
 # #+++++++++++++++++++++++++++++nginx configtion write config file++++++++++++++++++++++++++++
+# import datetime
+# from ACME.myhelper import hash_256_digest,b64
+# time = datetime.datetime.now()
+# b64_hash256_time = b64(hash_256_digest(str(time)))
+# print(time)
 

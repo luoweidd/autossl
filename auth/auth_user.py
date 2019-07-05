@@ -14,15 +14,16 @@ from base import basemethod
 from base.msgdict import msg
 
 
-session_cookie = sessions.SecureCookieSession()
-res = msg()
-log = loglog.logger
+
 
 class user:
 
     _User = "admin"
     _Passwd = "fba5b21c21c0c82d29645532680d7a20"
     #_mwpasswd = 'J0oIJ1%$2'
+    session_cookie = sessions.SecureCookieSession()
+    res = msg()
+    log = loglog.logger
 
 
     def init_user(self):
@@ -50,17 +51,10 @@ class user:
         return '用户名密码不能为空。'
 
     def logout_clear(self,user):
-        resutl = self.session_cookie.pop(user)
+        resutl = self.session_cookie.pop("user")
         return resutl
 
-def login_ceck():
-    def ceck(func):
-        user = 'admin'
-        if user in session_cookie:
-            result = func()
-            return result
-    result = res.getmsg(10)
-    return json.dumps(result)
+
 
 
 

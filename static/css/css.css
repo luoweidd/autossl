@@ -43,7 +43,7 @@ body {
 
 #right_form {
     width: 78.5%; height: 900px; margin: 0px 0px 0px 20.5%;
-    position: fixed;
+    position: fixed; z-index: 1;
 }
 
 .footer {
@@ -142,5 +142,6 @@ body {
 }
 
 .herder {
-    float: right;
+    float: right; position: absolute; font-size: 14px;
+    top: 15px; right: -155px; z-index: 10001; width: 300px;
 }
