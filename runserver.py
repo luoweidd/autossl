@@ -38,7 +38,11 @@ def before_action():
         if request.path != '/login':
             if 'user' not in session:
                 session['newurl']=request.path
-                return redirect(url_for('login_login'))
+                if request.method == 'GET':
+                    return redirect(url_for('login_login'))
+                result = re.getmsg(10013)
+                result.update({"redirectUrl":'/login'})
+                return json.dumps(result)
 
 
 @app.route('/favicon.ico')
@@ -85,7 +89,7 @@ def applyssl():
             order = ssl_Cert.new_order(domains)
             get_auth = ssl_Cert.get_auth(order)
             get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
-            if get_dns_auth != None:
+            if get_dns_auth != None and get_dns_auth != 'System error, please contact the system administrator!' and get_dns_auth != "该域名请求次数过多，请更换域名申请。":
                 result=re.getmsg(0)
                 result['msg']=get_dns_auth
                 return json.dumps(result)
@@ -141,15 +145,20 @@ def new_site_dns_validation():
         txt = data[3]
         if auth_link != None:
             validation_result = ssl_v2.dns_validation(txt,domains,challeng_link,auth_link)
-            if validation_result or validation_result != None:
-                cert = ssl_v2.get_cert()
-                nginx = nginx_server()
-                nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
-                nginx_status = nginx.restart_nginx_to_effective()
-                if nginx_status == None:
-                    result = re.getmsg(0)
-                    result['msg'] = cert
-                    return json.dumps(result)
+            if validation_result or validation_result != None or validation_result != 'System error, please contact the system administrator!':
+                cert = ssl_v2.get_cert(validation_result)
+                if type(cert) == list:
+                    nginx = nginx_server()
+                    log.info(cert[0],cert[1],cert[2])
+                    nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
+                    nginx_status = nginx.restart_nginx_to_effective()
+                    if nginx_status == None:
+                        result = re.getmsg(0)
+                        result['msg'] = cert
+                        return json.dumps(result)
+                    else:
+                        remsg = re.getmsg(10016)
+                        return json.dumps(re.msg(remsg))
                 else:
                     remsg = re.getmsg(10015)
                     return json.dumps(re.msg(remsg))

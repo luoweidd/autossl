@@ -318,6 +318,8 @@ class ssl_cert_v2:
             self.log.error(error)
             return error
         if resp.status_code < 200 or resp.status_code >= 300:
+            if resp.status_code == 429:
+                return "该域名请求次数过多，请更换域名申请。"
             self.log.error('Error calling ACME endpoint:%s' % resp.reason)
             self.log.error('Status Code:%s' % resp.status_code)
             return "System error, please contact the system administrator!"
@@ -404,30 +406,38 @@ class ssl_cert_v2:
         :param auth: author info
         :return: Validation results, if validation successfully returns the certificate finalize link address.
         '''
+        self.log.info(domain)
         import re
         if re.match('^\*\.',domain[0]):
             domain = domain[0].split("*")[1]
-        domain = domain[0]
+        self.log.info(domain)
         challenge_domain = '_acme-challenge%s' % domain
+        self.log.info(challenge_domain)
         for i in range(1,60):
             dns_query = myhelper.dns_query(challenge_domain)
-            dns_query = dns_query.split("\"")[1]
-            if dns_query == TXT:
-                challenge_status = json.loads(requests.get(challenge).text)["status"]
-                dns_challenge = self.dns_challenge(challenge)
-                if dns_challenge != None or dns_challenge != 'System error, please contact the system administrator!':
-                    challenge_res = json.loads(dns_challenge)
-                    if challenge_res["status"] == "invalid":
-                        self.auth_deactivated(auth["authorizations"][0])
-                        self.log.error('[auth error] Authorization error, now stop authorization。')
-                        return challenge_res
-                    elif challenge_res["status"] == "valid":
-                        finalize_res = self.finalize(auth)
-                        cert_info = self.get_cert(finalize_res)
-                        return cert_info
-                    self.log.info(dns_challenge)
-        else:
-            return 'DNS validation failed.info：%s'%dns_query
+            self.log.info(dns_query)
+            if dns_query != None or dns_query != '':
+                try:
+                    dns_query = dns_query.split("\"")[1]
+                    if dns_query == TXT:
+                        challenge_status = json.loads(requests.get(challenge).text)["status"]
+                        dns_challenge = self.dns_challenge(challenge)
+                        if dns_challenge != None or dns_challenge != 'System error, please contact the system administrator!':
+                            challenge_res = json.loads(dns_challenge)
+                            if challenge_res["status"] == "invalid":
+                                self.auth_deactivated(auth["authorizations"][0])
+                                self.log.error('[auth error] Authorization error, now stop authorization。')
+                                return challenge_res
+                            elif challenge_res["status"] == "valid":
+                                finalize_res = self.finalize(auth)
+                                cert_info = self.get_cert(finalize_res)
+                                return cert_info
+                            self.log.info(dns_challenge)
+                except Exception as error:
+                    self.log.error(error)
+                    return None
+            else:
+                return 'DNS validation failed.info：%s'%dns_query
 
     def dns_challenge(self,challenge_link):
         '''
@@ -529,7 +539,7 @@ class ssl_cert_v2:
             key_name = '%s%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
 
             myhelper.wirte_ssl_certificate(certificate_name,resp.text)
-            return domain_name,certificate_name,key_name,resp.text
+            return [domain_name,certificate_name,key_name,resp.text]
         return "System error, please contact the system administrator!"
 
     def auth_deactivated(self,auth_link):

@@ -20,7 +20,9 @@ class msg:
         {'code': 10010, 'msgtype': 'error', 'msg': 'Data type error, please pass in the correct data type according to the interface requirements'},
         {'code': 10011, 'msgtype': 'error', 'msg': 'Must POST method ,not support GET method'},
         {'code': 10012, 'msgtype': 'error', 'msg': 'Unknown error, please contact the administrator'},
-        {'code': 10013, 'msgtype': 'error', 'msg': ''}
+        {'code': 10013, 'msgtype': 'error', 'msg': ''},
+        {'code':10015,'msgtype':'error','msg':'信息数据获取失败，请重新提交申请。'},
+        {'code':10016,'msgtype':'error','msg':'证书申请成功，但web服务配置异常，请联系管理员检查web服务配置。'}
     ]
 
     def getmsg(self,code):

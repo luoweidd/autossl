@@ -24,15 +24,25 @@ function submit_apply() {
             validation[0].style.visibility="visible";
             },
         success:function(result){
-            var load = $("#loading_1");
-            load[0].style.visibility="hidden";
             var res=JSON.parse(result);
-            $('.content').html(res.msg[0]);
-            var validation = $("#dns_validation");
-            validation[0].style.visibility="visible";
-            validation[0].title = res.msg[1];
-            validation[0].alt = res.msg[2];
-            validation[0].label = res.msg[3];
+            if(res.msg.redirectUrl){
+                window.location.href = res.msg.redirectUrl
+            }
+            else {
+                var load = $("#loading_1");
+                load[0].style.visibility="hidden";
+                var validation = $("#dns_validation");
+                if (Array.isArray(validation)){
+                    $('.content').html(res.msg[0]);
+                    validation[0].style.visibility="visible";
+                    validation[0].title = res.msg[1];
+                    validation[0].alt = res.msg[2];
+                    validation[0].label = res.msg[3];
+                }
+                else {
+                    $('.content').html(res.msg);
+                }
+            }
         },
         messageerror:function (result) {
             var load = $("#loading_1")
@@ -68,17 +78,23 @@ function new_site_dns_validation() {
             // var load = $("#loading_1")
             // load[0].style.visibility="hidden";
             var res=JSON.parse(result);
-            var obj = res.msg;
-            var txts = '';
-            for (var i in obj){
-                var txt = "<p>"+obj[i]+"</p>";
-                txts += txt;
+            if (result.msg.redirectUrl){
+                window.location.href = result.msg.redirectUrl
             }
-            var load = $("#loading_1");
-            load[0].style.visibility="hidden";
-            $('.validationres').html(txts);
-            var auth_buttom = $("#dns_validation");
-            auth_buttom[0].style.visibility = "hidden";
+            else {
+                var obj = res.msg;
+                var txts = '';
+                for (var i in obj){
+                    var txt = "<p>"+obj[i]+"</p>";
+                    txts += txt;
+                }
+                var load = $("#loading_1");
+                load[0].style.visibility="hidden";
+                $('.validationres').html(txts);
+                var auth_buttom = $("#dns_validation");
+                auth_buttom[0].style.visibility = "hidden";
+            }
+
         },
         messageerror:function (result) {
             var load = $("#loading_1");
@@ -272,7 +288,6 @@ function login_close_windows() {
     meobj[0].style.visibility='hidden';
     var obj = $('#validationres');
     obj[0].style.visibility='hidden';
-    var auth_buttom = $("#dns_validation");
 }
 
 function winform_new() {
