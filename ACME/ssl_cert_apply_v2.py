@@ -285,6 +285,8 @@ class ssl_cert_v2:
             except Exception as error:
                 self.log.error(error)
             if resp.status_code < 200 or resp.status_code >= 300:
+                if resp.status_code == 429:
+                    return "该域名请求次数过多，请更换域名申请。"
                 self.log.error('Error calling ACME endpoint:%s'%resp.reason)
                 self.log.error('Status Code:%s'%resp.status_code)
                 return "System error, please contact the system administrator!"
@@ -318,8 +320,6 @@ class ssl_cert_v2:
             self.log.error(error)
             return error
         if resp.status_code < 200 or resp.status_code >= 300:
-            if resp.status_code == 429:
-                return "该域名请求次数过多，请更换域名申请。"
             self.log.error('Error calling ACME endpoint:%s' % resp.reason)
             self.log.error('Status Code:%s' % resp.status_code)
             return "System error, please contact the system administrator!"
@@ -332,22 +332,25 @@ class ssl_cert_v2:
         :return: auth link
         '''
         if order_info != None:
-            try:
-                resp = requests.get(order_info, headers=self.headers)
-            except requests.exceptions.RequestException as error:
-                resp = error.response
-                self.log.error(resp)
-                return  None
-            except Exception as error:
-                self.log.error(error)
-                return None
-            if resp.status_code < 200 or resp.status_code >= 300:
-                self.log.error('Error calling ACME endpoint:%s'%resp.reason)
-                self.log.error('Status Code:%s'%resp.status_code)
-                self.log.error("System error, please contact the system administrator!")
-            else:
-                get_auth = json.loads(resp.text)
-                return get_auth
+            if order_info != '该域名请求次数过多，请更换域名申请。':
+                try:
+                    resp = requests.get(order_info, headers=self.headers)
+                except requests.exceptions.RequestException as error:
+                    resp = error.response
+                    self.log.error(resp)
+                    return  None
+                except Exception as error:
+                    self.log.error(error)
+                    return None
+                if resp.status_code < 200 or resp.status_code >= 300:
+                    self.log.error('Error calling ACME endpoint:%s'%resp.reason)
+                    self.log.error('Status Code:%s'%resp.status_code)
+                    self.log.error("System error, please contact the system administrator!")
+                else:
+                    get_auth = json.loads(resp.text)
+                    return get_auth
+            self.log.error('该域名请求次数过多，请更换域名申请。')
+            return '该域名请求次数过多，请更换域名申请。'
         self.log.error("System error, please contact the system administrator!")
         return None
 
@@ -383,17 +386,20 @@ class ssl_cert_v2:
         :return: dns validation name,txt value,auth info,challgen link, txt,name
         '''
         if order_info != None:
-            LABLE = "_acme-challenge"
-            challenge = self.get_challenges(order_info["authorizations"])
-            if challenge != None and challenge["identifier"] and challenge["challenges"]:
-                domain_name = challenge["identifier"]["value"]
-                token=challenge["challenges"][0]["token"]
-                account_key = myhelper.get_jwk(self.AccountKeyFile)
-                keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
-                TXT = myhelper.b64(myhelper.hash_256_digest(keyAuthorization))
-                name = self.join_Char(LABLE, domain_name)
-                return ["DNS 解析名称: %s 解析类型: TXT 解析值: %s <br> 等待解析生效，可用nslookup ——> set type=txt ———> %s 命令查看是否生效，如果查询值等于此处TXT值，即生效，即可点击验证执行证书下发。<br>" %(name,TXT,name),json.dumps(order_info),challenge["challenges"][0]["url"],TXT,name]
-            self.log.error("[Error]: DNS auth error, data request exception.")
+            if order_info != '该域名请求次数过多，请更换域名申请。':
+                LABLE = "_acme-challenge"
+                challenge = self.get_challenges(order_info["authorizations"])
+                if challenge != None and challenge["identifier"] and challenge["challenges"]:
+                    domain_name = challenge["identifier"]["value"]
+                    token=challenge["challenges"][0]["token"]
+                    account_key = myhelper.get_jwk(self.AccountKeyFile)
+                    keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
+                    TXT = myhelper.b64(myhelper.hash_256_digest(keyAuthorization))
+                    name = self.join_Char(LABLE, domain_name)
+                    return ["DNS 解析名称: %s 解析类型: TXT 解析值: %s <br> 等待解析生效，可用nslookup ——> set type=txt ———> %s 命令查看是否生效，如果查询值等于此处TXT值，即生效，即可点击验证执行证书下发。<br>" %(name,TXT,name),json.dumps(order_info),challenge["challenges"][0]["url"],TXT,name]
+                self.log.error("[Error]: DNS auth error, data request exception.")
+            self.log.error('该域名请求次数过多，请更换域名申请。')
+            return '该域名请求次数过多，请更换域名申请。'
         return "System error, please contact the system administrator!"
 
 
@@ -410,17 +416,24 @@ class ssl_cert_v2:
         import re
         if re.match('^\*\.',domain[0]):
             domain = domain[0].split("*")[1]
-        self.log.info(domain)
-        challenge_domain = '_acme-challenge%s' % domain
+            self.log.info(domain)
+            challenge_domain = '_acme-challenge%s' % domain
+        elif re.match('^.',domain[0]):
+            self.log.info(domain[0])
+            challenge_domain = '_acme-challenge%s'%domain[0]
+        else:
+            self.log.info(domain[0])
+            challenge_domain = '_acme-challenge.%s'% domain[0]
         self.log.info(challenge_domain)
         for i in range(1,60):
             dns_query = myhelper.dns_query(challenge_domain)
             self.log.info(dns_query)
-            if dns_query != None or dns_query != '':
+            if dns_query != None or dns_query != '' or dns_query !=None:
                 try:
                     dns_query = dns_query.split("\"")[1]
                     if dns_query == TXT:
                         challenge_status = json.loads(requests.get(challenge).text)["status"]
+                        self.log.info(challenge_status)
                         dns_challenge = self.dns_challenge(challenge)
                         if dns_challenge != None or dns_challenge != 'System error, please contact the system administrator!':
                             challenge_res = json.loads(dns_challenge)
@@ -516,7 +529,7 @@ class ssl_cert_v2:
         :param cert_down: certificate download link
         :return: return the certificate content.
         '''
-        if cert_down != None or cert_down != "System error, please contact the system administrator!" or cert_down["status"] == "valid" and cert_down["certificate"]:
+        if cert_down != None and cert_down != "System error, please contact the system administrator!" or cert_down["status"] == "valid" and cert_down["certificate"]:
             self.headers.update({"Accept":"application/pem-certificate-chain"})
             try:
                 resp = requests.get(cert_down["certificate"], headers=self.headers)

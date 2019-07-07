@@ -230,38 +230,38 @@ class nginx_server:
             import hashlib
             import base64
             from ACME.myhelper import DomainDewildcards
-            conf_name = base64.urlsafe_b64encode(hashlib.sha256(str(time.time())).digest()).decode('utf-8').rstrip("=")
+            conf_name = base64.urlsafe_b64encode(hashlib.sha256(str(time.time()).encode('utf-8')).digest()).decode('utf-8').rstrip("=")
             domain = DomainDewildcards(domain)
-            config_info = '''
-            server
-                {
-                        listen 80;
-                        server_name %s;
-                        rewrite ^(.*)$ https://${server_name}$1 permanent;
+            conf_dir = self.conf_dir_1
+            config_info = '''server
+    {
+            listen 80;
+            server_name %s;
+            rewrite ^(.*)$ https://${server_name}$1 permanent;
+    }
+    server
+    {
+        listen 443 ssl;
+        server_name *.%s;
+        ssl on;
+        ssl_certificate   %s;
+        ssl_certificate_key  %s;
+        ssl_session_timeout 5m;
+        ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_prefer_server_ciphers on;
+        location / {
+            proxy_redirect off;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_pass http://127.0.0.1:8086;
                 }
-                server
-                {
-                    listen 443 ssl;
-                    server_name *.%s;
-                    ssl on;
-                    ssl_certificate   %s;
-                    ssl_certificate_key  %s;
-                    ssl_session_timeout 5m;
-                    ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
-                    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-                    ssl_prefer_server_ciphers on;
-                    location / {
-                        proxy_redirect off;
-                        proxy_set_header Host $host;
-                        proxy_set_header X-Real-IP $remote_addr;
-                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                        proxy_set_header Upgrade $http_upgrade;
-                        proxy_set_header Connection "upgrade";
-                        proxy_pass http://127.0.0.1:8086;
-                            }
-                    access_log /var/log/nginx/fangfeng_access.log;
-                }
+        access_log /var/log/nginx/fangfeng_access.log;
+    }
             '''%(domain,domain,pem,key)
-            with open('%s%s'%(self.conf_dir,conf_name),'w+')as f:
+            with open('%s%s.conf'%(conf_dir,conf_name),'w+')as f:
                 f.write(config_info)
                 return True

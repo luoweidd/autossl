@@ -87,15 +87,22 @@ def applyssl():
             ssl_Cert = ssl_cert_v2()
             domains = [data.decode('utf-8')]
             order = ssl_Cert.new_order(domains)
-            get_auth = ssl_Cert.get_auth(order)
-            get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
-            if get_dns_auth != None and get_dns_auth != 'System error, please contact the system administrator!' and get_dns_auth != "该域名请求次数过多，请更换域名申请。":
-                result=re.getmsg(0)
-                result['msg']=get_dns_auth
-                return json.dumps(result)
-            else:
-                remsg = re.getmsg(10015)
-                return json.dumps(re.msg(remsg))
+            if order != None:
+                get_auth = ssl_Cert.get_auth(order)
+                get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
+                if get_dns_auth != None:
+                    result=re.getmsg(0)
+                    result['msg']=get_dns_auth
+                    return json.dumps(result)
+                elif get_dns_auth == 'System error, please contact the system administrator!':
+                    result =re.getmsg(10012)
+                    return json.dumps(re.msg(result))
+                elif get_dns_auth == "该域名请求次数过多，请更换域名申请。":
+                    result =re.getmsg(10017)
+                    return json.dumps(re.msg(result))
+                else:
+                    remsg = re.getmsg(10015)
+                    return json.dumps(re.msg(remsg))
         remsg =re.getmsg(100)
         return json.dumps(remsg)
     else:
@@ -145,19 +152,24 @@ def new_site_dns_validation():
         txt = data[3]
         if auth_link != None:
             validation_result = ssl_v2.dns_validation(txt,domains,challeng_link,auth_link)
-            if validation_result or validation_result != None or validation_result != 'System error, please contact the system administrator!':
-                cert = ssl_v2.get_cert(validation_result)
-                if type(cert) == list:
+            if validation_result != None or validation_result != 'System error, please contact the system administrator!':
+                cert = validation_result
+                if type(validation_result) == list:
                     nginx = nginx_server()
-                    log.info(cert[0],cert[1],cert[2])
+                    log.info('%s\n%s\n%s\n'%(cert[0],cert[1],cert[2]))
                     nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
-                    nginx_status = nginx.restart_nginx_to_effective()
-                    if nginx_status == None:
-                        result = re.getmsg(0)
-                        result['msg'] = cert
-                        return json.dumps(result)
+                    nginx_conf_ceck = nginx.nginx_conf_check()
+                    if nginx_conf_ceck[0] == 0:
+                        nginx_status = nginx.restart_nginx_to_effective()
+                        if nginx_status[0] == 0:
+                            result = re.getmsg(0)
+                            result['msg'] = [cert[0],cert[1],cert[2]]
+                            return json.dumps(result)
+                        else:
+                            remsg = re.getmsg(10016)
+                            return json.dumps(re.msg(remsg))
                     else:
-                        remsg = re.getmsg(10016)
+                        remsg = re.getmsg(10018)
                         return json.dumps(re.msg(remsg))
                 else:
                     remsg = re.getmsg(10015)
@@ -266,13 +278,13 @@ def update_name_server_validation():
         db_ = data[4]
         if auth_link != None:
             validation_result = ssl_v2.dns_validation(txt, domains, challeng_link, auth_link)
-            if validation_result or validation_result != None:
+            if validation_result != None:
                 cert = validation_result
                 from contrllo.update_name_server_contrllo import update_name_server_contrllo
                 update_name_server_status = update_name_server_contrllo()
                 kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domain":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
                 update_status = update_name_server_status.update_contrllor(kwargs)
-                if update_status == None and update_status == 'ok' :
+                if update_status[0] == 0:
                     result = re.getmsg(0)
                     result['msg'] = '更换完成'
                     return json.dumps(result)
@@ -280,12 +292,15 @@ def update_name_server_validation():
                     result = re.getmsg(0)
                     result['msg'] = '数据未做任何修改！但执行成功。'
                     return json.dumps(result)
+                elif update_status == '未读取到匹配的配置数据，请联系管理员检查。':
+                    result = re.getmsg(0)
+                    result['msg'] = '未读取到匹配的配置数据，请联系管理员检查。'
+                    return json.dumps(result)
                 else:
                     remsg = re.getmsg(10015)
-                    return json.dumps(re.msg(remsg))
+                    return json.dumps(remsg)
             else:
                 result = re.getmsg(10015)
-                result['msg'] = validation_result
                 return json.dumps(result)
         else:
             remsg = re.getmsg(10015)

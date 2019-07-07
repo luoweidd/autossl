@@ -222,3 +222,14 @@
 # b64_hash256_time = b64(hash_256_digest(str(time)))
 # print(time)
 
+# from servsers.nginx_server import nginx_server
+#
+# ser = nginx_server()
+# status = ser.nginx_conf_check()
+# sta = ser.restart_nginx_to_effective()
+# print(status[0])
+# print(sta[0])
+#
+# from ACME.myhelper import DomainDewildcards
+#
+# print(DomainDewildcards('abc.com'))

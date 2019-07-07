@@ -27,25 +27,26 @@ class update_name_server_contrllo:
             nginx_config_paths_list = nginx_servers.get_conf_item_path(i)
             for j in nginx_config_paths_list:
                 nginx_config_data = nginx_servers.read_config(j)
-                if len(nginx_config_data) > 1:
-                    remove_notes_comments = nginx_servers.remove_notes_comments(nginx_config_data)
-                    if remove_notes_comments != None:
-                        dict_nginx_conf = nginx_servers.get_nginx_config(remove_notes_comments)
-                        if dict_nginx_conf != None and re.match('%s;'%old_domain[1::],dict_nginx_conf['server_1'][3]["server_name"]) and re.match('\*\.%s;'%old_domain[1::],dict_nginx_conf["server_2"][3]['server_name']):
-                            dict_nginx_conf['server_2'][5]["ssl_certificate"] = '%s;'%new_pem
-                            dict_nginx_conf['server_2'][6]["ssl_certificate_key"] = '%s;'%new_key
-                            dict_nginx_conf['server_1'][3]["server_name"] = '%s;'%new_domain[1::]
-                            dict_nginx_conf["server_2"][3]['server_name'] = '*%s;'%new_domain
-                            new_conf_data = nginx_servers.nginx_config_write_buffer_fomat(dict_nginx_conf)
-                            update_res = nginx_servers.wirte_file_optertion(j,new_conf_data)
-                            self.log.error(update_res)
-                            if update_res != None:
-                                nginx_config_status = nginx_servers.nginx_conf_check()
-                                if nginx_config_status == None:
-                                    nginx_server_status = nginx_servers.restart_nginx_to_effective()
-                                    return nginx_server_status
-                                self.log.error('配置检查不通过，请通知管理员检查配置文件，以及系统。错误信息：%s'%nginx_config_status[1])
-                            return '更新配置文件错误。'
+                if nginx_config_data != None:
+                    if len(nginx_config_data) > 1:
+                        remove_notes_comments = nginx_servers.remove_notes_comments(nginx_config_data)
+                        if remove_notes_comments != None:
+                            dict_nginx_conf = nginx_servers.get_nginx_config(remove_notes_comments)
+                            if dict_nginx_conf != None and re.match('%s;'%old_domain[1::],dict_nginx_conf['server_1'][3]["server_name"]) and re.match('\*\.%s;'%old_domain[1::],dict_nginx_conf["server_2"][3]['server_name']):
+                                dict_nginx_conf['server_2'][5]["ssl_certificate"] = '%s;'%new_pem
+                                dict_nginx_conf['server_2'][6]["ssl_certificate_key"] = '%s;'%new_key
+                                dict_nginx_conf['server_1'][3]["server_name"] = '%s;'%new_domain[1::]
+                                dict_nginx_conf["server_2"][3]['server_name'] = '*%s;'%new_domain
+                                new_conf_data = nginx_servers.nginx_config_write_buffer_fomat(dict_nginx_conf)
+                                update_res = nginx_servers.wirte_file_optertion(j,new_conf_data)
+                                self.log.error(update_res)
+                                if update_res != None:
+                                    nginx_config_status = nginx_servers.nginx_conf_check()
+                                    if nginx_config_status[0] == 0:
+                                        nginx_server_status = nginx_servers.restart_nginx_to_effective()
+                                        return nginx_server_status
+                                    self.log.error('配置检查不通过，请通知管理员检查配置文件，以及系统。错误信息：%s'%nginx_config_status[1])
+                                return '更新配置文件错误。'
             self.log.error('未读取到匹配的配置数据，请联系管理员检查。')
             return '未读取到匹配的配置数据，请联系管理员检查。'
 
@@ -64,7 +65,7 @@ class update_name_server_contrllo:
         new_domain = url_extract_doain(kwargs['new_domain'])
         old_domain = url_extract_doain(kwargs['old_domain'])
         nginx_update_status = self.nginx_config_options(old_domain,new_domain,kwargs["new_pem"],kwargs["new_key"])
-        if nginx_update_status == 'ok':
+        if nginx_update_status[0] == 0:
             db_update_status = self.update_DB(kwargs['Id'],kwargs["new_domain"])
             if db_update_status.modified_count > 0 or db_update_status.matched_count > 0:
                 return 'ok'

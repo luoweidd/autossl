@@ -39,11 +39,11 @@ def MD5(value):
     return md5_v
 
 def url_extract_doain(url):
-    if re.match('^http'):
+    if re.match('^http',url):
         domain = re.sub('^http://','',url)
         domain = domain.split('/')[0]
         return domain
-    elif re.match('^https://'):
+    elif re.match('^https://',url):
         domain = re.sub('https://','',url)
         domain = domain.split('/')[0]
         return domain
