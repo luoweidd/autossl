@@ -24,7 +24,8 @@ class msg:
         {'code':10015,'msgtype':'error','msg':'信息数据获取失败，请重新提交申请。'},
         {'code':10016,'msgtype':'error','msg':'证书申请成功，但web服务配置异常，请联系管理员检查web服务配置。'},
         {'code': 10017, 'msgtype': 'error', 'msg': '域名申请次数过多，请更换域名申请。'},
-        {'code': 10018, 'msgtype': 'error', 'msg': '服务配置检查不通过，请联系管理员检查配置文件。'}
+        {'code': 10018, 'msgtype': 'error', 'msg': '服务配置检查不通过，请联系管理员检查配置文件。'},
+        {'code': 10019, 'msgtype': 'error', 'msg': '域名输入错误，请输入正确的域名'}
     ]
 
     def getmsg(self,code):

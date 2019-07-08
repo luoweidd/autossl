@@ -148,7 +148,7 @@ class nginx_server:
                 conf.update({j: server})
             return conf
         except Exception as e:
-            self.log.error( 'Conversion error，error info：%s'%e)
+            self.log.error( 'Conversion error，error info：%s'%e.__context__)
             return None
 
     def nginx_config_write_buffer_fomat(self, config_object_data):
@@ -217,7 +217,7 @@ class nginx_server:
         else:
             return 'ok'
 
-    def add_Anti_seal_conf(self,domain,pem,key):
+    def add_Anti_seal_conf(self,domain,pem,key,conf_dir=None):
         '''
         Add the nginx service configuration of the anti-blocking site.
         :param domain:
@@ -232,7 +232,8 @@ class nginx_server:
             from ACME.myhelper import DomainDewildcards
             conf_name = base64.urlsafe_b64encode(hashlib.sha256(str(time.time()).encode('utf-8')).digest()).decode('utf-8').rstrip("=")
             domain = DomainDewildcards(domain)
-            conf_dir = self.conf_dir_1
+            if conf_dir == None:
+                conf_dir = self.conf_dir_1
             config_info = '''server
     {
             listen 80;
@@ -262,6 +263,9 @@ class nginx_server:
         access_log /var/log/nginx/fangfeng_access.log;
     }
             '''%(domain,domain,pem,key)
-            with open('%s%s.conf'%(conf_dir,conf_name),'w+')as f:
-                f.write(config_info)
-                return True
+            try:
+                with open('%s%s.conf'%(conf_dir,conf_name),'w+')as f:
+                    f.write(config_info)
+                    return True
+            except IOError as e:
+                return '系统没有写权限。'

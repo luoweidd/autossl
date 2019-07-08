@@ -233,3 +233,29 @@
 # from ACME.myhelper import DomainDewildcards
 #
 # print(DomainDewildcards('abc.com'))
+
+# from base.basemethod import url_extract_doain
+#
+# url = 'https://www.tskb120.com/index.html#'
+# url1 = 'https://www.tskb120.com/'
+#
+# domain = url_extract_doain(url1)
+# print(domain)
+
+# !/usr/bin/env python
+# import re
+#
+#
+# def getDomain(domain):
+#     root_doamin = [".com", ".cn", ".com.cn", ".gov", ".net", ".edu.cn", ".net.cn", ".org.cn", ".co.jp", ".gov.cn", ".co.uk",
+#                "ac.cn", ".edu", ".tv", ".info", ".ac", ".ag", ".am", ".at", ".be", ".biz", ".bz", ".cc", ".de", ".es",
+#                ".eu", ".fm", ".gs", ".hk", ".in", ".info", ".io", ".it", ".jp", ".la", ".md", ".ms", ".name", ".nl",
+#                ".nu", ".org", ".pl", ".ru", ".sc", ".se", ".sg", ".sh", ".tc", ".tk", ".tv", ".tw", ".us", ".co", ".uk",
+#                ".vc", ".vg", ".ws", ".il", ".li", ".nz"]
+#     for root in root_doamin:
+#         regex = re.compile(r'[0-9a-zA-Z_-]+'+ root +'$')
+#         m = regex.findall(domain)
+#         if len(m) > 0:
+#             return m[0]
+#
+# print(getDomain("oso-c.com"))

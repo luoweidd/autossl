@@ -236,7 +236,10 @@ function update_domain(obj){
                     validations[0].txt = result.msg[5];
                     console.log(validations[0].txt);
                 }
-                ;
+                else {
+                    validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 25%">' + result.msg + '</p>')
+                }
+
             }
         },
         messageerror:function (result) {

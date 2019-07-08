@@ -414,16 +414,13 @@ class ssl_cert_v2:
         '''
         self.log.info(domain)
         import re
-        if re.match('^\*\.',domain[0]):
-            domain = domain[0].split("*")[1]
+        if re.match('^\*\.',domain):
+            domain = domain.split("*")[1]
             self.log.info(domain)
             challenge_domain = '_acme-challenge%s' % domain
-        elif re.match('^.',domain[0]):
-            self.log.info(domain[0])
-            challenge_domain = '_acme-challenge%s'%domain[0]
         else:
-            self.log.info(domain[0])
-            challenge_domain = '_acme-challenge.%s'% domain[0]
+            self.log.info(domain)
+            challenge_domain = '_acme-challenge.%s'% domain
         self.log.info(challenge_domain)
         for i in range(1,60):
             dns_query = myhelper.dns_query(challenge_domain)
