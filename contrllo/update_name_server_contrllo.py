@@ -10,7 +10,7 @@
  * Time: 下午3:58
 '''
 from DBL._sys_config import sys_config
-from servsers.nginx_server import nginx_server
+from nginx_server.nginx_server import nginx_server
 from base.mylog import loglog
 from base.basemethod import url_extract_doain
 import re

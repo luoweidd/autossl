@@ -222,7 +222,7 @@
 # b64_hash256_time = b64(hash_256_digest(str(time)))
 # print(time)
 
-# from servsers.nginx_server import nginx_server
+# from nginx_server.nginx_server import nginx_server
 #
 # ser = nginx_server()
 # status = ser.nginx_conf_check()

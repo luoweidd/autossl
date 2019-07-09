@@ -16,7 +16,7 @@ from ACME.ssl_cert_apply_v2 import ssl_cert_v2
 from base.mylog import loglog
 import json,datetime
 from datetime import timedelta
-from servsers.nginx_server import nginx_server
+from nginx_server.nginx_server import nginx_server
 from auth.auth_user import user
 from ACME.myhelper import hash_256_digest,b64
 from base.basemethod import url_extract_doain,getDomain
