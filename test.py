@@ -245,11 +245,11 @@
 # !/usr/bin/env python
 # import re
 #
-#
+# 双根域名必须在列表最前，否则无法匹配到
 # def getDomain(domain):
-#     root_doamin = [".com", ".cn", ".com.cn", ".gov", ".net", ".edu.cn", ".net.cn", ".org.cn", ".co.jp", ".gov.cn", ".co.uk",
-#                "ac.cn", ".edu", ".tv", ".info", ".ac", ".ag", ".am", ".at", ".be", ".biz", ".bz", ".cc", ".de", ".es",
-#                ".eu", ".fm", ".gs", ".hk", ".in", ".info", ".io", ".it", ".jp", ".la", ".md", ".ms", ".name", ".nl",
+#     root_doamin = [ ".com.cn",".edu.cn", ".net.cn", ".org.cn", ".co.jp", ".gov.cn", ".co.uk","ac.cn",".com", ".cn",
+#                ".gov", ".net",  ".edu", ".tv", ".info", ".ac", ".ag", ".am", ".at", ".be", ".biz", ".bz", ".cc", ".de",
+#                 ".es",".eu", ".fm", ".gs", ".hk", ".in", ".info", ".io", ".it", ".jp", ".la", ".md", ".ms", ".name", ".nl",
 #                ".nu", ".org", ".pl", ".ru", ".sc", ".se", ".sg", ".sh", ".tc", ".tk", ".tv", ".tw", ".us", ".co", ".uk",
 #                ".vc", ".vg", ".ws", ".il", ".li", ".nz"]
 #     for root in root_doamin:
@@ -258,4 +258,4 @@
 #         if len(m) > 0:
 #             return m[0]
 #
-# print(getDomain("oso-c.com"))
+# print(getDomain(".esonaonline.com.cn"))

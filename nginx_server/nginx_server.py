@@ -75,7 +75,8 @@ class nginx_server:
                     return data
                 return None
         except Exception as e:
-            self.log.error(e)
+            print(e)
+            self.log.error('文件读取异常，请留意。')
             return None
 
     def remove_notes_comments(self,conf_file_date_obj):

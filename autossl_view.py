@@ -158,7 +158,7 @@ def new_site_dns_validation():
     if request.method =='POST':
         data = request.get_data()
         data = eval(data)
-        domains = [data[0]]
+        domains = data[0]
         ssl_v2 = ssl_cert_v2()
         auth_link = data[1]
         challeng_link = data[2]
@@ -278,7 +278,7 @@ def update_name_server():
                     return json.dumps(result)
         except Exception as e:
             log.error(e)
-            result = messge.getmsg(100)
+            result = messge.getmsg(10017)
             return json.dumps(result)
     result = messge.getmsg(10011)
     return json.dumps(result)

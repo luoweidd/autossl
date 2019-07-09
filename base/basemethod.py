@@ -50,9 +50,9 @@ def url_extract_doain(url):
     else:return url
 
 def getDomain(domain):
-    root_doamin = [".com", ".cn", ".com.cn", ".gov", ".net", ".edu.cn", ".net.cn", ".org.cn", ".co.jp", ".gov.cn", ".co.uk",
-               "ac.cn", ".edu", ".tv", ".info", ".ac", ".ag", ".am", ".at", ".be", ".biz", ".bz", ".cc", ".de", ".es",
-               ".eu", ".fm", ".gs", ".hk", ".in", ".info", ".io", ".it", ".jp", ".la", ".md", ".ms", ".name", ".nl",
+    root_doamin = [ ".com.cn",".edu.cn", ".net.cn", ".org.cn", ".co.jp", ".gov.cn", ".co.uk","ac.cn",".com", ".cn",
+               ".gov", ".net",  ".edu", ".tv", ".info", ".ac", ".ag", ".am", ".at", ".be", ".biz", ".bz", ".cc", ".de",
+                ".es",".eu", ".fm", ".gs", ".hk", ".in", ".info", ".io", ".it", ".jp", ".la", ".md", ".ms", ".name", ".nl",
                ".nu", ".org", ".pl", ".ru", ".sc", ".se", ".sg", ".sh", ".tc", ".tk", ".tv", ".tw", ".us", ".co", ".uk",
                ".vc", ".vg", ".ws", ".il", ".li", ".nz"]
     for root in root_doamin:

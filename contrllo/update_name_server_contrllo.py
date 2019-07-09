@@ -41,7 +41,7 @@ class update_name_server_contrllo:
                                     new_conf_data = nginx_servers.nginx_config_write_buffer_fomat(dict_nginx_conf)
                                     update_res = nginx_servers.wirte_file_optertion(j,new_conf_data)
                                     self.log.error(update_res)
-                                    if update_res != None:
+                                    if update_res == 'ok':
                                         nginx_config_status = nginx_servers.nginx_conf_check()
                                         if nginx_config_status[0] == 0:
                                             nginx_server_status = nginx_servers.restart_nginx_to_effective()
