@@ -16,6 +16,7 @@ class msg:
         {'code':0,'msgtype':'success','msg':None},
         {'code':10,'msgtype':'error','msg':'login error, please login.'},
         {'code':11,'msgtype':'error','msg':'Illegal requests, please visit in the correct way.'},
+        {'code': 12, 'msgtype': 'error', 'msg': ''},
         {'code':100,'msgtyoe':'error','msg':'This request data type must be JSON'},
         {'code': 10010, 'msgtype': 'error', 'msg': 'Data type error, please pass in the correct data type according to the interface requirements'},
         {'code': 10011, 'msgtype': 'error', 'msg': 'Must POST method ,not support GET method'},

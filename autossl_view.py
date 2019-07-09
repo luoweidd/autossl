@@ -66,6 +66,10 @@ def login_login():
                 respon = Response(json.dumps(result))
                 respon.set_cookie(data['user'],b64_hash256_time)
                 return respon
+            elif login_rsult == '用户名密码错误。':
+                result = messge.getmsg(12)
+                result['msg'] = '用户名密码错误。'
+                return json.dumps(result)
             else:
                 result = messge.getmsg(10013)
                 result['msg'] = login_rsult
