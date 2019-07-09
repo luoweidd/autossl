@@ -10,7 +10,7 @@
  * Time: 下午2:01
 '''
 
-from flask import Flask,request,redirect,render_template,current_app,url_for,Response
+from flask import Flask,request,redirect,render_template,current_app,url_for,Response,Session
 from base.msgdict import msg
 from ACME.ssl_cert_apply_v2 import ssl_cert_v2
 from base.mylog import loglog
@@ -32,17 +32,17 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 
 messge=msg()
 user_obj = user()
-session =user_obj.session_cookie
+session = user_obj.session_main
 
 @app.before_request
 def before_action():
     if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1:
         if request.path != '/login':
             #log.info(session['user'])
+            log.info(request.url)
             log.info(session.get('user'))
-            log.info(session.get('cookie'))
-            if 'user' not in session and 'cookie' not in session:
-                session['newurl']=request.path
+            if 'user' not in session:
+                #session['newurl']=request.path
                 if request.method == 'GET':
                     return redirect(url_for('login_login'))
                 result = messge.getmsg(10013)
@@ -65,14 +65,13 @@ def login_login():
             data =json.loads(request.get_data())
             login_rsult = user_obj.login_validation(data)
             if login_rsult == '登录成功':
-                time = datetime.datetime.now()
-                b64_hash256_time = b64(hash_256_digest(str(time)))
+                b64_hash256_user = b64(hash_256_digest('%s+%s'%(data['user'],data['passwd'])))
                 redirectUrl = '%shome'%request.host_url
                 result = messge.getmsg(0)
                 result['msg'] = {'status':200,'result':login_rsult,'redirectUrl':redirectUrl}
-                session['cookie'] = request.cookies.get('admin')
                 respon = Response(json.dumps(result))
-                respon.set_cookie(data['user'],b64_hash256_time)
+                respon.set_cookie(data['user'],b64_hash256_user)
+                session["cookie"] = b64_hash256_user
                 return respon
             elif login_rsult == '用户名密码错误。':
                 result = messge.getmsg(12)

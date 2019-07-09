@@ -68,7 +68,7 @@ class update_name_server_contrllo:
                                     return '更新配置文件错误。'
             # self.log.error('未读取到匹配的配置数据，请联系管理员检查。')
             # return '未读取到匹配的配置数据，请联系管理员检查。'
-            add_conf = nginx_servers.add_Anti_seal_conf(new_domain,new_pem,new_key)
+            add_conf = nginx_servers.add_Anti_seal_conf(new_domain[1::],new_pem,new_key)
             if add_conf:
                 nginx_config_status = nginx_servers.nginx_conf_check()
                 if nginx_config_status[0] == 0:

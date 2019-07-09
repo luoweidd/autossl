@@ -8,7 +8,7 @@
 
 import json
 from functools import wraps
-from flask import sessions
+from flask import Session
 from base.mylog import loglog
 from base import basemethod
 from base.msgdict import msg
@@ -21,7 +21,7 @@ class user:
     _User = "admin"
     _Passwd = "fba5b21c21c0c82d29645532680d7a20"
     #_mwpasswd = 'J0oIJ1%$2'
-    session_cookie = sessions.SecureCookieSession()
+    session_main = Session()
     res = msg()
     log = loglog.logger
 
@@ -45,13 +45,13 @@ class user:
     def login_validation(self,users):
         if users != None or users != '':
             if users['user'] == self._User and users['passwd'] == self._Passwd:
-                self.session_cookie['user'] = users['user']
+                self.session_main['user'] = users['user']
                 return '登录成功'
             return '用户名密码错误。'
         return '用户名密码不能为空。'
 
     def logout_clear(self):
-        resutl = self.session_cookie.pop("user")
+        resutl = self.session_main.pop("user")
         return resutl
 
 
