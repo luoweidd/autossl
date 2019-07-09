@@ -176,7 +176,7 @@ function login() {
             //var result= JSON.parse(result)
             var validation = $("#validationres");
             validation[0].style.visibility ="visible";
-            validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+            //validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
             var close_window = $('#close_window');
             close_window[0].style.visibility='visible';
             if (result.msg.redirectUrl !=undefined && result.msg.redirectUrl != null){
