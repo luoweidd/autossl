@@ -20,7 +20,7 @@ from nginx_server.nginx_server import nginx_server
 from auth.auth_user import user
 from ACME.myhelper import hash_256_digest,b64
 from base.basemethod import url_extract_doain,getDomain
-import requests,re
+import requests,re,time
 
 
 logs = loglog()
@@ -38,13 +38,20 @@ session =user_obj.session_cookie
 def before_action():
     if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1:
         if request.path != '/login':
-            if 'user' not in session:
+            #log.info(session['user'])
+            log.info(session.get('user'))
+            log.info(session.get('cookie'))
+            if 'user' not in session and 'cookie' not in session:
                 session['newurl']=request.path
                 if request.method == 'GET':
                     return redirect(url_for('login_login'))
                 result = messge.getmsg(10013)
                 result.update({"redirectUrl":'/login'})
                 return json.dumps(result)
+            elif request.cookies.get(session['user']) != session['cookie']:
+                session['newurl']=request.path
+                if request.method == 'GET':
+                    return redirect(url_for('login_login'))
 
 
 @app.route('/favicon.ico')
@@ -63,6 +70,7 @@ def login_login():
                 redirectUrl = '%shome'%request.host_url
                 result = messge.getmsg(0)
                 result['msg'] = {'status':200,'result':login_rsult,'redirectUrl':redirectUrl}
+                session['cookie'] = request.cookies.get('admin')
                 respon = Response(json.dumps(result))
                 respon.set_cookie(data['user'],b64_hash256_time)
                 return respon
@@ -211,7 +219,7 @@ def get_Anti_seal_site_info():
 def logout():
     if request.method == 'POST':
         user = request.get_data().decode('utf-8').strip(' ')
-        result = user_obj.logout_clear(user)
+        result = user_obj.logout_clear()
         remsg = messge.getmsg(0)
         remsg["msg"] = result
         return json.dumps(remsg)

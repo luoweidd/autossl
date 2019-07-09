@@ -50,7 +50,7 @@ class user:
             return '用户名密码错误。'
         return '用户名密码不能为空。'
 
-    def logout_clear(self,user):
+    def logout_clear(self):
         resutl = self.session_cookie.pop("user")
         return resutl
 
