@@ -326,5 +326,4 @@ def update_name_server_validation():
     result = messge.getmsg(10011)
     return json.dumps(result)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=5000,debug=True)
+
