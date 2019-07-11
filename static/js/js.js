@@ -178,9 +178,11 @@ function login() {
             validation[0].style.visibility ="visible";
             var close_window = $('#close_window');
             close_window[0].style.visibility='visible';
+            var basehost = window.document.location.host;
+            var baseprotocol = window.location.protocol;
             if (result.msg.redirectUrl !=undefined && result.msg.redirectUrl != null){
                 validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
-                window.location.href = result.msg.redirectUrl;
+                window.location.href = baseprotocol+'//'+basehost+result.msg.redirectUrl;
             }
             else {
                 if(result.msg == '用户名密码错误。'){

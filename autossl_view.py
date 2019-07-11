@@ -20,7 +20,7 @@ from nginx_server.nginx_server import nginx_server
 from auth.auth_user import user
 from ACME.myhelper import hash_256_digest,b64
 from base.basemethod import url_extract_doain,getDomain
-import requests
+import requests,time
 
 
 logs = loglog()
@@ -33,6 +33,8 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 messge=msg()
 user_obj = user()
 session = user_obj.session_main
+stime = time.time()
+time_struc = int(round(stime * 1000))
 
 @app.before_request
 def before_action():
@@ -67,7 +69,7 @@ def login_login():
             login_rsult = user_obj.login_validation(data)
             if login_rsult == '登录成功':
                 b64_hash256_user = b64(hash_256_digest('%s+%s'%(data['user'],data['passwd'])))
-                redirectUrl = '%shome'%request.host_url
+                redirectUrl = 'home'
                 result = messge.getmsg(0)
                 result['msg'] = {'status':200,'result':login_rsult,'redirectUrl':redirectUrl}
                 respon = Response(json.dumps(result))
@@ -86,11 +88,11 @@ def login_login():
             result = messge.getmsg(10013)
             result['msg'] = '%s'%e
             return json.dumps(result)
-    return render_template('login.html')
+    return render_template('login.html',time_struc=time_struc)
 
 @app.route('/home')
 def sslfrom():
-    return render_template('applyform.html',user=session['user'])
+    return render_template('applyform.html',user=session['user'],time_struc=time_struc)
 
 
 @app.route('/applyssl',methods=['POST','GET'])
@@ -126,12 +128,12 @@ def applyssl():
 
 @app.route('/account_form_info',methods=['GET'])
 def account_form_info():
-    return render_template('account_info_form.html',user=session['user'])
+    return render_template('account_info_form.html',user=session['user'],time_struc=time_struc)
 
 
 @app.route('/apply_ssl_form',methods=['GET'])
 def apply_ssl_form():
-    return render_template('apply_ssl.html')
+    return render_template('apply_ssl.html',time_struc=time_struc)
 
 
 @app.route('/account_info_api',methods=["GET"])
@@ -233,7 +235,7 @@ def server_name_list():
     from DBL._sys_config import sys_config
     sys_obj = sys_config()
     sys = sys_obj.server_list()
-    return render_template('server_list_form.html',res=sys)
+    return render_template('server_list_form.html',res=sys,time_struc=time_struc)
 
 
 @app.route('/update_name_server',methods=['POST'])
