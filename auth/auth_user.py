@@ -8,7 +8,7 @@
 
 import json
 from functools import wraps
-from flask import Session
+from flask.sessions import SecureCookieSession
 from base.mylog import loglog
 from base import basemethod
 from base.msgdict import msg
@@ -21,7 +21,7 @@ class user:
     _User = "admin"
     _Passwd = "fba5b21c21c0c82d29645532680d7a20"
     #_mwpasswd = 'J0oIJ1%$2'
-    session_main = Session()
+    session_main = SecureCookieSession()
     res = msg()
     log = loglog.logger
 

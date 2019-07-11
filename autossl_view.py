@@ -10,17 +10,17 @@
  * Time: 下午2:01
 '''
 
-from flask import Flask,request,redirect,render_template,current_app,url_for,Response,Session
+from flask import Flask,request,redirect,render_template,current_app,url_for,Response
 from base.msgdict import msg
 from ACME.ssl_cert_apply_v2 import ssl_cert_v2
 from base.mylog import loglog
-import json,datetime
+import json
 from datetime import timedelta
 from nginx_server.nginx_server import nginx_server
 from auth.auth_user import user
 from ACME.myhelper import hash_256_digest,b64
 from base.basemethod import url_extract_doain,getDomain
-import requests,re,time
+import requests
 
 
 logs = loglog()
@@ -37,7 +37,7 @@ session = user_obj.session_main
 @app.before_request
 def before_action():
     if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1:
-        if request.path != '/login':
+        if request.path != '/login' and request.path != '/':
             #log.info(session['user'])
             log.info(request.url)
             log.info(session.get('user'))
@@ -58,6 +58,7 @@ def before_action():
 def favicon():
     return current_app.send_static_file("images/favicon.ico")
 
+@app.route('/',methods=['GET'])
 @app.route('/login',methods=['POST','GET'])
 def login_login():
     if request.method == 'POST':
