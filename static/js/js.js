@@ -182,11 +182,13 @@ function login() {
                 validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
                 window.location.href = result.msg.redirectUrl;
             }
-            if(result.msg == '用户名密码错误。'){
-                validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
-            }
             else {
-                validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">系统错误，请联系管理员！</p>')
+                if(result.msg == '用户名密码错误。'){
+                    validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+                }
+                else {
+                    validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">系统错误，请联系管理员！</p>')
+                }
             }
 
         },
