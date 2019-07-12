@@ -10,7 +10,7 @@
  * Time: 下午2:01
 '''
 
-from flask import Flask,request,redirect,render_template,current_app,url_for,Response
+from flask import Flask,request,redirect,render_template,current_app,Response,url_for
 from base.msgdict import msg
 from ACME.ssl_cert_apply_v2 import ssl_cert_v2
 from base.mylog import loglog
@@ -39,22 +39,23 @@ time_struc = int(round(stime * 1000))
 @app.before_request
 def before_action():
     if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1:
-        if request.path != '/login' and request.path != '/':
+        if request.path == '/forget_password':
+            return render_template('forget_password.html')
+        elif request.path != '/login' and request.path != '/':
             #log.info(session['user'])
             log.info(request.url)
             log.info(session.get('user'))
             if 'user' not in session:
                 #session['newurl']=request.path
                 if request.method == 'GET':
-                    return redirect(url_for('login_login'))
+                    return redirect(url_for('login_login', _scheme="https", _external=True))
                 result = messge.getmsg(10013)
                 result.update({"redirectUrl":'/login'})
                 return json.dumps(result)
             elif request.cookies.get(session['user']) != session['cookie']:
                 session['newurl']=request.path
                 if request.method == 'GET':
-                    return redirect(url_for('login_login'))
-
+                    return redirect(url_for('login_login', _scheme="https", _external=True))
 
 @app.route('/favicon.ico')
 def favicon():
@@ -69,7 +70,7 @@ def login_login():
             login_rsult = user_obj.login_validation(data)
             if login_rsult == '登录成功':
                 b64_hash256_user = b64(hash_256_digest('%s+%s'%(data['user'],data['passwd'])))
-                redirectUrl = 'home'
+                redirectUrl = '/home'
                 result = messge.getmsg(0)
                 result['msg'] = {'status':200,'result':login_rsult,'redirectUrl':redirectUrl}
                 respon = Response(json.dumps(result))
@@ -204,7 +205,7 @@ def new_site_dns_validation():
 
 @app.route('/forget_password',methods=["POST","GET"])
 def forget_password():
-    return render_template('forget_password.html',user=session['user'])
+    return render_template('forget_password.html')
 
 
 @app.route('/get_Anti_seal_site_info',methods=['POST','GET'])

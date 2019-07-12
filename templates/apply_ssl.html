@@ -4,10 +4,18 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <link rel="stylesheet" href="static/css/css.css">
+    <script src="static/js/jquery-3.4.1.min.js" rel="script"></script>
+    <script src="static/js/jquery.md5.js" rel="script"></script>
 </head>
 <body style="overflow-x: hidden;">
-        <script src="static/js/jquery-3.4.1.min.js"></script>
-        <script src="static/js/js.js"></script>
+    <script type="application/javascript">
+        var time_stru = new Date().getTime();
+        var oHead = document.getElementsByTagName('HEAD').item(0);
+        var oScript= document.createElement("script");
+        oScript.type = "text/javascript";
+        oScript.src="static/js/js.js?ver="+time_stru;
+        oHead.appendChild( oScript);
+    </script>
         <div class="input_div">
             <p style="color: red; margin-left: 33%; font-size: 14px; text-align: left">
             注：<br>域名最大支持二级域名，例：xxx.xxx.com 或 xxx.xxx.cn <br>

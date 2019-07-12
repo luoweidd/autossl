@@ -3,10 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    <script src="static/js/js.js" rel="script"></script>
     <link rel="stylesheet" href="static/css/css.css">
+    <script src="static/js/jquery-3.4.1.min.js" rel="script"></script>
+    <script src="static/js/jquery.md5.js" rel="script"></script>
 </head>
 <body style="overflow-x: hidden;">
+    <script type="application/javascript">
+        var time_stru = new Date().getTime();
+        var oHead = document.getElementsByTagName('HEAD').item(0);
+        var oScript= document.createElement("script");
+        oScript.type = "text/javascript";
+        oScript.src="static/js/js.js?ver="+time_stru;
+        oHead.appendChild( oScript);
+    </script>
     <div id="letf_form_div">
 
     </div>

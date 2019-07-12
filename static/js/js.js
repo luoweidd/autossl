@@ -1,5 +1,3 @@
-document.write("<script src='static/js/jquery-3.4.1.min.js' type='text/javascript'></script>")
-document.write("<script src='static/js/jquery.md5.js' type='text/javascript'></script>")
 
 function loading_c() {
     var load = $("#loading");
@@ -26,9 +24,7 @@ function submit_apply() {
         success:function(result){
             var res=JSON.parse(result);
             if(res.redirectUrl){
-                var host = window.location.host;
-                var protocol = window.location.protocol;
-                parent.window.location.href = protocol+host+res.redirectUrl;
+                parent.window.location.href = res.redirectUrl;
             }
             else {
                 var load = $("#loading_1");
@@ -82,9 +78,7 @@ function new_site_dns_validation() {
                 // load[0].style.visibility="hidden";
                 var res=JSON.parse(result);
                 if (result.redirectUrl){
-                    var host = window.location.host;
-                    var protocol = window.location.protocol;
-                    parent.window.location.href = protocol+host+res.redirectUrl;
+                    parent.window.location.href = res.redirectUrl;
                 }
                 else {
                     if(Array.isArray(res.msg)){
@@ -182,7 +176,7 @@ function login() {
             var baseprotocol = window.location.protocol;
             if (result.msg.redirectUrl !=undefined && result.msg.redirectUrl != null){
                 validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
-                window.location.href = baseprotocol+'//'+basehost+result.msg.redirectUrl;
+                window.location.href = result.msg.redirectUrl;
             }
             else {
                 if(result.msg == '用户名密码错误。'){

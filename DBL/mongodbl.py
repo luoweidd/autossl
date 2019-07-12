@@ -18,9 +18,9 @@ class mongoDBL:
 
         # mongodb: // user:passwd @ localhost:27017 /?authSource = game_server
         self.database = 'red_packet_game_server'
-        self.db_user = ''
-        self.db_passwd = ''
-        self._connect_str = 'mongodb://127.0.0.1:27017/%s?authSource=%s' % (self.database, self.database)
+        self.db_user = 'root'
+        self.db_passwd = 'WERteol367765'
+        self._connect_str = 'mongodb://%s@%s127.0.0.1:27017/%s?authSource=%s' % (self.db_user,self.db_passwd,self.database, self.database)
 
     def DBConect(self):
         try:
