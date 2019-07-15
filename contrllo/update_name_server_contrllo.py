@@ -33,20 +33,22 @@ class update_name_server_contrllo:
                         if remove_notes_comments != None:
                             dict_nginx_conf = nginx_servers.get_nginx_config(remove_notes_comments)
                             if re.match('^\.',old_domain):
-                                if dict_nginx_conf != None and re.match('%s;'%old_domain[1::],dict_nginx_conf['server_1'][3]["server_name"]) and re.match('\*\.%s;'%old_domain[1::],dict_nginx_conf["server_2"][3]['server_name']):
+                                if dict_nginx_conf != None and re.match('\*\.%s;'%old_domain,dict_nginx_conf['server_1'][3]["server_name"]) and re.match('\*\.%s;'%old_domain[1::],dict_nginx_conf["server_2"][3]['server_name']):
                                     dict_nginx_conf['server_2'][5]["ssl_certificate"] = '%s;'%new_pem
                                     dict_nginx_conf['server_2'][6]["ssl_certificate_key"] = '%s;'%new_key
-                                    dict_nginx_conf['server_1'][3]["server_name"] = '%s;'%new_domain[1::]
+                                    dict_nginx_conf['server_1'][3]["server_name"] = '*%s;'%new_domain
                                     dict_nginx_conf["server_2"][3]['server_name'] = '*%s;'%new_domain
                                     new_conf_data = nginx_servers.nginx_config_write_buffer_fomat(dict_nginx_conf)
                                     update_res = nginx_servers.wirte_file_optertion(j,new_conf_data)
                                     self.log.error(update_res)
                                     if update_res == 'ok':
                                         nginx_config_status = nginx_servers.nginx_conf_check()
+                                        self.log.error(nginx_config_status)
                                         if nginx_config_status[0] == 0:
                                             nginx_server_status = nginx_servers.restart_nginx_to_effective()
+                                            self.log.info(nginx_server_status)
                                             return nginx_server_status
-                                        self.log.error('配置检查不通过，请通知管理员检查配置文件，以及系统。错误信息：%s'%nginx_config_status[1])
+                                        self.log.info('配置检查不通过，请通知管理员检查配置文件，以及系统。错误信息：%s'%nginx_config_status[1])
                                         return '配置检查不通过，请通知管理员检查配置文件，以及系统。'
                                     return '更新配置文件错误。'
                             else:
@@ -94,6 +96,7 @@ class update_name_server_contrllo:
         new_domain = url_extract_doain(kwargs['new_domain'])
         old_domain = url_extract_doain(kwargs['old_domain'])
         nginx_update_status = self.nginx_config_options(old_domain,new_domain,kwargs["new_pem"],kwargs["new_key"])
+        self.log.info(nginx_update_status)
         if nginx_update_status[0] == 0:
             db_update_status = self.update_DB(kwargs['Id'],kwargs["new_domain"])
             if db_update_status.modified_count > 0 or db_update_status.matched_count > 0:

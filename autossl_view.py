@@ -309,7 +309,8 @@ def update_name_server_validation():
                     update_name_server_status = update_name_server_contrllo()
                     kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domain":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
                     update_status = update_name_server_status.update_contrllor(kwargs)
-                    if update_status[0] == 0:
+                    log.info('update_status:  ---> %s',update_status)
+                    if update_status == 'ok':
                         result = messge.getmsg(0)
                         result['msg'] = '更换完成'
                         return json.dumps(result)

@@ -238,8 +238,8 @@ class nginx_server:
             config_info = '''server
     {
             listen 80;
-            server_name %s;
-            rewrite ^(.*)$ https://${server_name}$1 permanent;
+            server_name *.%s;
+            rewrite ^(.*)$ https://$host$1 permanent;
     }
     server
     {
