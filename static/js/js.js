@@ -360,3 +360,52 @@ function logout() {
         }
     });
 }
+
+function onmousouer() {
+    var boj = $("#login_user_name")[0];
+    if (boj.textContent == " admin "){
+        setTimeout(admin_user_hide_pane_visible,200);
+    }
+    else {
+       setTimeout(ordinary_user_hide_pane_visible,200);
+    }
+}
+
+function onmousmove() {
+    var boj = $("#login_user_name")[0];
+    console.debug(boj.textContent);
+    if (boj.textContent == " admin "){
+        setTimeout(admin_user_hide_pane_hidden,800);
+    }
+    else {
+        setTimeout(ordinary_user_hide_pane_hidden,800)
+    }
+}
+
+function admin_user_hide_pane_visible() {
+    $(".admin_user_hide_pane")[0].style.visibility = "visible";
+}
+
+function ordinary_user_hide_pane_visible() {
+    $(".ordinary_user_hide_pane")[0].style.visibility = "visible";
+}
+
+function admin_user_hide_pane_hidden() {
+    $(".admin_user_hide_pane")[0].style.visibility = "hidden";
+}
+
+function ordinary_user_hide_pane_hidden() {
+    $(".ordinary_user_hide_pane")[0].style.visibility = "hidden";
+}
+
+function add_new_user() {
+
+}
+
+function delete_user() {
+
+}
+
+function update_user_passwd() {
+
+}

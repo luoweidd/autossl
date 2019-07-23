@@ -17,6 +17,7 @@ class msg:
         {'code':10,'msgtype':'error','msg':'login error, please login.'},
         {'code':11,'msgtype':'error','msg':'Illegal requests, please visit in the correct way.'},
         {'code': 12, 'msgtype': 'error', 'msg': ''},
+        {'code': 13, 'msgtype': 'error', 'msg': 'Permission denied;'},
         {'code':100,'msgtyoe':'error','msg':'This request data type must be JSON'},
         {'code': 10010, 'msgtype': 'error', 'msg': 'Data type error, please pass in the correct data type according to the interface requirements'},
         {'code': 10011, 'msgtype': 'error', 'msg': 'Must POST method ,not support GET method'},
@@ -26,7 +27,8 @@ class msg:
         {'code':10016,'msgtype':'error','msg':'证书申请成功，但web服务配置异常，请联系管理员检查web服务配置。'},
         {'code': 10017, 'msgtype': 'error', 'msg': '域名申请次数过多，请更换域名申请。'},
         {'code': 10018, 'msgtype': 'error', 'msg': '服务配置检查不通过，请联系管理员检查配置文件。'},
-        {'code': 10019, 'msgtype': 'error', 'msg': '域名输入错误，请输入正确的域名'}
+        {'code': 10019, 'msgtype': 'error', 'msg': '域名输入错误，请输入正确的域名'},
+        {'code': 10020, 'msgtype': 'error', 'msg': '域名输入错误，请输入正确的域名'}
     ]
 
     def getmsg(self,code):

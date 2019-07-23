@@ -20,6 +20,7 @@ from nginx_server.nginx_server import nginx_server
 from auth.auth_user import user
 from ACME.myhelper import hash_256_digest,b64
 from base.basemethod import url_extract_doain,getDomain
+from auth.user_model import user_modle
 import requests,time
 
 
@@ -48,14 +49,23 @@ def before_action():
             if 'user' not in session:
                 #session['newurl']=request.path
                 if request.method == 'GET':
-                    return redirect(url_for('login_login', _scheme="https", _external=True))
+                    return redirect(url_for('login_login', _scheme="http", _external=True))
                 result = messge.getmsg(10013)
                 result.update({"redirectUrl":'/login'})
                 return json.dumps(result)
             elif request.cookies.get(session['user']) != session['cookie']:
                 session['newurl']=request.path
                 if request.method == 'GET':
-                    return redirect(url_for('login_login', _scheme="https", _external=True))
+                    return redirect(url_for('login_login', _scheme="http", _external=True))
+
+def permission(function):
+    def _permission(**kwargs):
+        if session.get('name') != 'admin':
+            result = messge.getmsg(13)
+            return json.dumps(result)
+        else:
+            result = function(**kwargs)
+            return result
 
 @app.route('/favicon.ico')
 def favicon():
@@ -230,13 +240,21 @@ def logout():
         resutl = messge.getmsg(10011)
         return json.dumps(resutl)
 
-
+@permission
 @app.route('/name_list',methods=['POST','GET'])
 def server_name_list():
     from DBL._sys_config import sys_config
     sys_obj = sys_config()
-    sys = sys_obj.server_list()
-    return render_template('server_list_form.html',res=sys,time_struc=time_struc)
+    user_name = session.get('name')
+    user_modl = user_modle()
+    user_all = user_modl.read_user_data()
+    for i in user_all:
+        if user_name == i["name"]:
+            channleid = i["channle"]
+            sys = sys_obj.server_list(channleid)
+            return render_template('server_list_form.html',res=sys,time_struc=time_struc)
+        resutl = messge.getmsg(10)
+        return json.dumps(resutl)
 
 
 @app.route('/update_name_server',methods=['POST'])

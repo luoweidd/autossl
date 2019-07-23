@@ -12,7 +12,7 @@ from flask.sessions import SecureCookieSession
 from base.mylog import loglog
 from base import basemethod
 from base.msgdict import msg
-
+from auth.user_model import user_modle
 
 
 
@@ -25,28 +25,18 @@ class user:
     res = msg()
     log = loglog.logger
 
-
-    def init_user(self):
-        pass
-
-    def read_file(self):
-        with open("user",'r+') as f:
-            read = f.readlines()
-            f.close()
-            return read
-
-    def write_file(self,data):
-        pass
-
     def passwd_md5(self,passwd):
         passwd_md5 = basemethod.MD5(passwd)
         return passwd_md5
 
     def login_validation(self,users):
         if users != None or users != '':
-            if users['user'] == self._User and users['passwd'] == self._Passwd:
-                self.session_main['user'] = users['user']
-                return '登录成功'
+            user_model = user_modle()
+            user_all = user_model.read_user_data()
+            for i in user_all:
+                if users['user'] == i['name'] and users['passwd'] == i['passwd']:
+                    self.session_main['user'] = users['user']
+                    return '登录成功'
             return '用户名密码错误。'
         return '用户名密码不能为空。'
 

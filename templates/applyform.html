@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <title>申请SSL证书</title>
     <link rel="stylesheet" href="static/css/css.css">
+    <link rel="stylesheet" href="static/css/layui.css">
     <script src="static/js/jquery-3.4.1.min.js" rel="script"></script>
     <script src="static/js/jquery.md5.js" rel="script"></script>
+    <script src="static/js/layui.js" rel="script"></script>
 </head>
 <body style="overflow-x: hidden;">
     <script type="application/javascript">
@@ -17,9 +19,21 @@
         oHead.appendChild( oScript);
     </script>
     <div class="herder">
-        欢迎&nbsp;&nbsp;<label id="login_user_name"  style="color: blue; font-size: 16px"> {{ user }} </label>
+        欢迎&nbsp;&nbsp;<label id="login_user_name" onmouseover="onmousouer()"  style="color: blue; font-size: 16px"> {{ user }} </label>
         &nbsp;&nbsp;
         <input id="logout" style="visibility: visible" type="button" value="注销" onclick="logout()">
+    </div>
+    <div class="admin_user_hide_pane" onmouseover="onmousouer()" onmouseleave="onmousmove()">
+        <ul class="user_manerge_menu">
+            <li onclick="add_new_user()">添加新用户</li>
+            <li onclick="update_user_passwd()">修改密码</li>
+            <li onclick="delete_user()">删除用户</li>
+        </ul>
+    </div>
+    <div class="ordinary_user_hide_pane" onmouseover="onmousouer()" onmouseleave="onmousmove()">
+        <ul class="user_manerge_menu">
+            <li onclick="update_user_passwd()">修改密码</li>
+        </ul>
     </div>
     <div style="width: 100%">
         <iframe id="letf_form" name="right_form" onload="loader()" src="/account_form_info">

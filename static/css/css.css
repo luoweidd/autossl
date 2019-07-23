@@ -143,5 +143,29 @@ body {
 
 .herder {
     float: right; position: absolute; font-size: 14px;
-    top: 15px; right: -155px; z-index: 10001; width: 300px;
+    top: 15px; right: -145px; z-index: 10001; width: 300px;
+}
+
+.admin_user_hide_pane {
+    visibility: hidden; background-color: darkseagreen; border-radius: 2px;
+    position: absolute; top: 45px; right: 45px; z-index: 10002;
+    width: 130px; height: 65px; line-height: revert; text-align: center;
+}
+
+.ordinary_user_hide_pane {
+    visibility: hidden; background-color: darkseagreen; border-radius: 2px;
+    position: absolute; top: 40px; right: 45px; z-index: 10002;
+    width: 130px; height: 20px; line-height: revert; text-align: center;
+}
+
+.user_manerge_menu li:hover {
+    font-family: "Times New Roman"; font-size: 12px; font-weight: revert;
+    list-style: none; height: 20px; background-color: darkseagreen;
+    border: 1px cadetblue solid; color: white; cursor: pointer; border-radius: 2px;
+}
+
+.user_manerge_menu li:active {
+    font-family: "Times New Roman"; font-size: 13px; font-weight: unset; cursor: pointer;
+    list-style: none; height: 20px; background-color: #009E94;
+    border: darkgrey 1.5px solid; border-radius: 2px;
 }
