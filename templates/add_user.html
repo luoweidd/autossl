@@ -13,8 +13,33 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="static/css/css.css">
+    <script src="static/js/jquery-3.4.1.min.js" rel="script"></script>
+    <script src="static/js/jquery.md5.js" rel="script"></script>
+    <script rel="script" src="static/js/js.js"></script>
 </head>
 <body>
-
+    <div class="admin_node_main">
+        <div class="add_user_box">
+            <p>用户名</p>
+            <input id="add_user_name" type="text">
+            <p>密码</p>
+            <input id="add_user_passwd_neo" TYPE="password">
+            <p>验证密码</p>
+            <input id="add_user_passwd_tow" type="password">
+            <p>渠道ID</p>
+            <select id="add_user_channle">
+                <option value="请选择渠道ID" selected = "selected">——请选择渠道ID——</option>
+                {% for i in sys %}
+                    {% for j in i %}
+                    <option value= '"'+{{ i[j] }}+'"'>{{ i[j] }}</option>
+                    {% endfor %}
+                {% endfor %}
+            </select>
+            <br>
+            <br>
+            <input class="but_bottom" type="button" value="添加" onclick="add_new_user()">
+        </div>
+    </div>
 </body>
 </html>

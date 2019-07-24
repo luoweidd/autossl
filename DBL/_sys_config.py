@@ -22,15 +22,29 @@ class sys_config:
         except Exception as e:
             self.log.error("连接错误，错误消息：%s"%e)
 
-    def get_collection_all(self,channleid):
+    def get_collection_all(self):
+        try:
+            collec = self.cur.get_collection(self.collection).find({'eflag':1},{"itemName","itemVal","channelId"})
+            return collec
+        except Exception as e:
+            self.log.error( "获取%s数据错误，错误消息：%s"%(self.collection,e))
+
+    def bychannelid_get_collection_all(self,channleid):
         try:
             collec = self.cur.get_collection(self.collection).find({'eflag':1,"channelId":channleid},{"itemName","itemVal","channelId"})
             return collec
         except Exception as e:
             self.log.error( "获取%s数据错误，错误消息：%s"%(self.collection,e))
 
-    def server_list(self,channleid):
-        server_list_all = self.get_collection_all(channleid)
+    def server_list(self):
+        server_list_all = self.get_collection_all()
+        list_all = []
+        for i in server_list_all:
+            list_all.append(i)
+        return list_all
+
+    def bychannle_server_list(self,channleid):
+        server_list_all = self.bychannelid_get_collection_all(channleid)
         list_all = []
         for i in server_list_all:
             list_all.append(i)

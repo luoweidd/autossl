@@ -21,6 +21,7 @@ from auth.auth_user import user
 from ACME.myhelper import hash_256_digest,b64
 from base.basemethod import url_extract_doain,getDomain
 from auth.user_model import user_modle
+from contrllo.user_contrllo import user_contrlor
 import requests,time
 
 
@@ -36,6 +37,7 @@ user_obj = user()
 session = user_obj.session_main
 stime = time.time()
 time_struc = int(round(stime * 1000))
+user_contrllor_obj = user_contrlor()
 
 @app.before_request
 def before_action():
@@ -245,13 +247,16 @@ def logout():
 def server_name_list():
     from DBL._sys_config import sys_config
     sys_obj = sys_config()
-    user_name = session.get('name')
+    user_name = session.get('user')
     user_modl = user_modle()
     user_all = user_modl.read_user_data()
     for i in user_all:
-        if user_name == i["name"]:
+        if user_name == "admin":
+            sys = sys_obj.server_list()
+            return render_template('server_list_form.html',res=sys)
+        elif user_name == i["name"]:
             channleid = i["channle"]
-            sys = sys_obj.server_list(channleid)
+            sys = sys_obj.bychannle_server_list(channleid)
             return render_template('server_list_form.html',res=sys,time_struc=time_struc)
         resutl = messge.getmsg(10)
         return json.dumps(resutl)
@@ -360,4 +365,65 @@ def update_name_server_validation():
     result = messge.getmsg(10011)
     return json.dumps(result)
 
+@permission
+@app.route('/add_new_user',methods=['POST','GET'])
+def add_new_user():
+    if request.method == 'GET':
+        all_channelid = user_contrllor_obj.get_all_channelId()
+        return render_template('add_user.html',sys = all_channelid)
+    elif request.method == 'POST':
+        data = request.get_data()
+        try:
+            json.loads(data)
+            add_user = user_contrllor_obj.add_new_user(data)
+            if add_user == 'ok':
+                result = messge.getmsg(0)
+                result['msg'] = '用户已删除。'
+                return json.dumps(result)
+            else:
+                result = messge.getmsg(12)
+                result['msg'] = '用户删除失败。'
+                return json.dumps(result)
+        except Exception as e:
+            log.error("程序错误： %s"%e)
+    else:
+        result = messge.getmsg(10013)
+        result['msg'] = '不支持:"%s"请求方法'%request.method
+        return result
 
+@permission
+@app.route('/delete_old_user',methods=['POST','GET'])
+def delete_old_user():
+    data = request.get_data()
+    user_del = user_contrllor_obj.delete_old_user(data)
+    if user_del == 'ok':
+        result = messge.getmsg(0)
+        result['msg'] = '用户已删除。'
+        return json.dumps(result)
+    else:
+        result = messge.getmsg(12)
+        result['msg'] = '用户删除失败。'
+        return json.dumps(result)
+
+@app.route('/update_old_user_passwd',methods=['POST','GET'])
+def update_old_user_passws():
+    if request.method == 'POST':
+        data = request.get_data()
+        update_user = user_contrllor_obj.update_old_user(data)
+        if update_user == 'ok':
+            result = messge.getmsg(0)
+            result['msg'] = '密码修改成功。'
+            return json.dumps(result)
+        else:
+            result = messge.getmsg(12)
+            result['msg'] = '密码修改失败。'
+        return json.dumps(result)
+    elif request.method == 'GET':
+        return render_template('update_user_passwd.html')
+
+@permission
+@app.route('/get_all_user',methods=['POST','GET'])
+def get_all_user():
+    user_list = user_contrllor_obj.get_all_user()
+    log.info('%s'%user_list)
+    return render_template('all_user_info.html',user_list = user_list)

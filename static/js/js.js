@@ -168,14 +168,14 @@ function login() {
         dataType:'json',
         success:function(result){
             //var result= JSON.parse(result)
-            var validation = $("#validationres");
-            validation[0].style.visibility ="visible";
-            var close_window = $('#close_window');
-            close_window[0].style.visibility='visible';
+            //var validation = $("#validationres");
+            //validation[0].style.visibility ="visible";
+            //var close_window = $('#close_window');
+            //close_window[0].style.visibility='visible';
             var basehost = window.document.location.host;
             var baseprotocol = window.location.protocol;
             if (result.msg.redirectUrl !=undefined && result.msg.redirectUrl != null){
-                validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+                //validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
                 window.location.href = result.msg.redirectUrl;
             }
             else {
@@ -398,6 +398,16 @@ function ordinary_user_hide_pane_hidden() {
     $(".ordinary_user_hide_pane")[0].style.visibility = "hidden";
 }
 
+function all_user_page() {
+    var rigth_from = parent.$('#right_form');
+    rigth_from[0].src = '/get_all_user';
+}
+
+function add_user_page() {
+    var rigth_from = parent.$('#right_form');
+    rigth_from[0].src = '/add_new_user';
+}
+
 function add_new_user() {
 
 }
@@ -408,4 +418,15 @@ function delete_user() {
 
 function update_user_passwd() {
 
+}
+
+function update_user_passwd_page() {
+    var rigth_from = parent.$('#right_form');
+    rigth_from[0].src = '/update_old_user_passwd';
+}
+
+function getusername(){
+    var login_username = parent.$("#login_user_name")[0];
+    var username = $('#update_user_name')[0];
+    username.textContent = login_username.textContent.trim();
 }

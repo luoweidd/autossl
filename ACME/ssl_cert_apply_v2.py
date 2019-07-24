@@ -192,7 +192,7 @@ class ssl_cert_v2:
                 return "System error, please contact the system administrator!"
             else:
                 info = json.loads(resp.text)
-                info["url"]=resp.url
+                # info["url"]=resp.url
                 nonce = resp.headers[self.nonec]
                 info["nonce"] = nonce
                 return info

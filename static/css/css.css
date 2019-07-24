@@ -169,3 +169,28 @@ body {
     list-style: none; height: 20px; background-color: #009E94;
     border: darkgrey 1.5px solid; border-radius: 2px;
 }
+
+.admin_node_main {
+    width: 1000px; margin-top: 15%; margin: auto; font-size: 12px;
+}
+
+.form_table {
+    width:1000px; margin: auto; margin-top: 100px; border-bottom: darkgrey 1px solid;
+}
+
+.form_tr {
+    background-color:darkseagreen; text-align: center;
+}
+
+.form_table tr td {
+    border-bottom: darkgrey 1px solid; font-size: 14px;
+}
+
+.add_user_box {
+    border-radius: 8px; margin: auto; margin-top: 10%; width: 180px; height: 240px;
+    font-size: 14px;
+}
+
+.but_bottom {
+    margin-left: 140px;
+}

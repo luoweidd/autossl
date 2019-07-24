@@ -13,8 +13,26 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="static/css/css.css">
+    <script src="static/js/jquery-3.4.1.min.js" rel="script"></script>
+    <script src="static/js/jquery.md5.js" rel="script"></script>
+    <script rel="script" src="static/js/js.js"></script>
 </head>
-<body>
-
+<body onload="getusername()">
+    <div class="admin_node_main">
+        <div class="add_user_box">
+            <p>用户名</p>
+            <label id = "update_user_name"></label>
+            <p>旧密码</p>
+            <input id="updae_user_old_passwd" TYPE="password">
+            <p>新密码</p>
+            <input id="update_user_new_passwd_neo" TYPE="password">
+            <p>验证新密码</p>
+            <input id="update_user_new_passwd_tow" TYPE="password">
+            <br/>
+            <br>
+            <input class="but_bottom" onclick="update_user_passwd()" type="button" value="提交">
+        </div>
+    </div>
 </body>
 </html>

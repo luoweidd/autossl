@@ -13,8 +13,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="static/css/css.css">
+    <script src="static/js/jquery-3.4.1.min.js" rel="script"></script>
+    <script rel="script" src="static/js/js.js"></script>
 </head>
 <body>
-
+    <div class="admin_node_main">
+        <table class="form_table">
+            <tr class="form_tr">
+                <td>用户名</td>
+                <td>渠道</td>
+                <td>操作</td>
+            </tr>
+            {% for i in user_list %}
+                <tr>
+                    <td>{{ i["name"] }}</td>
+                    <td>{{ i["channle"] }}</td>
+                    <td style="width: 100px"><input value="改密" type="button" onclick="update_user_passwd_page()">&nbsp;&nbsp;<input value="删除" type="button" onclick="delete_user()"></td>
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <input value="添加" type="button" onclick="add_user_page()">
+    </div>
 </body>
 </html>

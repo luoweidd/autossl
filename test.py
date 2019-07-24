@@ -259,3 +259,13 @@
 #             return m[0]
 #
 # print(getDomain(".esonaonline.com.cn"))
+
+# from  DBL.tb_user import tb_user
+#
+# user_ = tb_user()
+# user = user_.get_all_channle()
+# user_list = []
+# for i in user:
+#     if i not in user_list and i["channelId"] != 'admin':
+#         user_list.append(i)
+# print(user_list)
