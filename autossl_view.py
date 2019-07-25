@@ -51,7 +51,7 @@ def before_action():
             if 'user' not in session:
                 #session['newurl']=request.path
                 if request.method == 'GET':
-                    return redirect(url_for('login_login', _scheme="http", _external=True))
+                    return redirect(url_for('login_login', _scheme="http", _external=True)) #生产环境中,如果部署了https站反向代理，需修改"_scheme"值="https"，且在代理配置中需加入——scheme配置
                 result = messge.getmsg(10013)
                 result.update({"redirectUrl":'/login'})
                 return json.dumps(result)
@@ -258,8 +258,8 @@ def server_name_list():
             channleid = i["channle"]
             sys = sys_obj.bychannle_server_list(channleid)
             return render_template('server_list_form.html',res=sys,time_struc=time_struc)
-        resutl = messge.getmsg(10)
-        return json.dumps(resutl)
+    resutl = messge.getmsg(10)
+    return json.dumps(resutl)
 
 
 @app.route('/update_name_server',methods=['POST'])
@@ -374,15 +374,15 @@ def add_new_user():
     elif request.method == 'POST':
         data = request.get_data()
         try:
-            json.loads(data)
-            add_user = user_contrllor_obj.add_new_user(data)
+            user_data = json.loads(data)
+            add_user = user_contrllor_obj.add_new_user(user_data)
             if add_user == 'ok':
                 result = messge.getmsg(0)
-                result['msg'] = '用户已删除。'
+                result['msg'] = '用户添加成功。'
                 return json.dumps(result)
             else:
                 result = messge.getmsg(12)
-                result['msg'] = '用户删除失败。'
+                result['msg'] = '用户添加失败。'
                 return json.dumps(result)
         except Exception as e:
             log.error("程序错误： %s"%e)
@@ -409,6 +409,7 @@ def delete_old_user():
 def update_old_user_passws():
     if request.method == 'POST':
         data = request.get_data()
+        data = json.loads(data)
         update_user = user_contrllor_obj.update_old_user(data)
         if update_user == 'ok':
             result = messge.getmsg(0)

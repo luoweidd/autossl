@@ -20,22 +20,25 @@ class user_contrlor:
 
 
     def add_new_user(self,user_dict):
-        user_contr = user_contrlor(user_dict["user"],user_dict["passwd"],user_dict["channle"])
+        user_contr = user_modle(user_dict["name"],user_dict["passwd"],user_dict["channle"])
         status = user_contr.create_new_user()
-        if status == 'ok':
+        if status == True:
             return 'ok'
+        return status
 
     def delete_old_user(self,username):
-        user_contr = user_contrlor()
-        status = user_contr.delete_old_user(username)
-        if status == 'ok':
+        user_contr = user_modle()
+        status = user_contr.delete_user(username.decode("utf-8"))
+        if status == True:
             return 'ok'
+        return status
 
     def update_old_user(self,update_dict):
-        user_contr = user_contrlor()
-        status = user_contr.update_old_user(update_dict)
-        if status == 'ok':
+        user_contr = user_modle()
+        status = user_contr.update_passwd(update_dict)
+        if status == True:
             return 'ok'
+        return status
 
     def get_all_user(self):
         user_object = user_modle()

@@ -143,7 +143,7 @@ body {
 
 .herder {
     float: right; position: absolute; font-size: 14px;
-    top: 15px; right: -145px; z-index: 10001; width: 300px;
+    top: 15px; right: -135px; z-index: 10001; width: 300px;
 }
 
 .admin_user_hide_pane {
@@ -193,4 +193,9 @@ body {
 
 .but_bottom {
     margin-left: 140px;
+}
+
+#login_user_name{
+    color: blue; text-overflow:ellipsis; width: 10px; font-size: 16px;
+
 }

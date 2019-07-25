@@ -27,8 +27,23 @@ class user_modle:
         self.channle = channle
 
     def create_modle_data(self,user):
+        '''
+        初始化用户清空userdata数据，重新写入
+        :param user: user集合：{"name":"name","passwd":"passwd","channle":"channle"}
+        :return: True
+        '''
         with open(self.file_path,'w+')as f:
             f.writelines(user);
+            return True
+
+    def create_append_user(self,user):
+        '''
+        新添加用户追加到userdata中
+        :param user: user集合：{"name":"name","passwd":"passwd","channle":"channle"}
+        :return: True
+        '''
+        with open(self.file_path,'a+')as f:
+            f.writelines("\n%s"%user);
             return True
 
     def create_new_user(self):
@@ -39,7 +54,7 @@ class user_modle:
                 return '用户已存在，请更换用户名。'
         else:
             user = json.dumps(user)
-            create_stus = self.create_modle_data(user)
+            create_stus = self.create_append_user(user)
             if create_stus is True:
                 return True
             return '数据写入失败。'
@@ -56,17 +71,28 @@ class user_modle:
         user_all = self.read_user_data()
         for i in user_all:
             if del_user == i['name']:
-                user_all.pop(del_user)
-                return True
+                user_all.remove(i)
+        rewreite_data = self.new_data_write_user_data(user_all)
+        res = self.create_modle_data(rewreite_data)
+        return res
 
     def update_passwd(self,user):
         user_all = self.read_user_data()
-        for i in user:
+        for i in user_all:
             if user["name"] == i["name"]:
-                user_all.update(user["passwd"])
-                return True
-        return '没有查询到该用户。'
+                if user["old_passwd"] == i["passwd"]:
+                    i["passwd"] = user["passwd"]
+                else:
+                    return '旧密码输入错误，密码修改失败。'
+        rewreite_data = self.new_data_write_user_data(user_all)
+        res = self.create_modle_data(rewreite_data)
+        return res
 
+    def new_data_write_user_data(self,res):
+        tmp = ''
+        for i in res:
+            tmp += '%s\n'%json.dumps(i)
+        return tmp[:-1]
 
 if os.path.exists(user_modle.file_path) is False:
     _name = "admin"

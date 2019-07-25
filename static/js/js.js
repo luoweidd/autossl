@@ -114,30 +114,30 @@ function new_site_dns_validation() {
     }
 }
 
-function loader() {
-    $.ajax({
-        url:"/account_info_api",
-        type:'GET',
-        dataType:'text',
-        beforeSend:function(){
-            var load = $("#loading");
-            load[0].style.visibility="visible";
-            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
-            },
-        success:function(result){
-            var load = $("#loading");
-            load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
-        },
-        messageerror:function (result) {
-            var load = $("#loading");
-            load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
-        }
-    });
-}
+// function loader() {
+//     $.ajax({
+//         url:"/account_info_api",
+//         type:'GET',
+//         dataType:'text',
+//         beforeSend:function(){
+//             var load = $("#loading");
+//             load[0].style.visibility="visible";
+//             $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+//             },
+//         success:function(result){
+//             var load = $("#loading");
+//             load[0].style.visibility="hidden";
+//             var res=JSON.parse(result);
+//             $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+//         },
+//         messageerror:function (result) {
+//             var load = $("#loading");
+//             load[0].style.visibility="hidden";
+//             var res=JSON.parse(result);
+//             $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+//         }
+//     });
+// }
 
 function MsgAnalysis(msg) {
     var li="<table class='account_info_tables'><H3>account infomation:</H3>"
@@ -167,22 +167,23 @@ function login() {
         data:data,
         dataType:'json',
         success:function(result){
-            //var result= JSON.parse(result)
-            //var validation = $("#validationres");
-            //validation[0].style.visibility ="visible";
-            //var close_window = $('#close_window');
-            //close_window[0].style.visibility='visible';
-            var basehost = window.document.location.host;
-            var baseprotocol = window.location.protocol;
+            var validation = $("#validationres");
+            var close_window = $('#close_window');
+            // var basehost = window.document.location.host;
+            // var baseprotocol = window.location.protocol;
             if (result.msg.redirectUrl !=undefined && result.msg.redirectUrl != null){
                 //validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
                 window.location.href = result.msg.redirectUrl;
             }
             else {
                 if(result.msg == '用户名密码错误。'){
+                    validation[0].style.visibility ="visible";
+                    close_window[0].style.visibility='visible';
                     validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
                 }
                 else {
+                    validation[0].style.visibility ="visible";
+                    close_window[0].style.visibility='visible';
                     validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">系统错误，请联系管理员！</p>')
                 }
             }
@@ -201,8 +202,8 @@ function login() {
 function update_domain(obj){
     var objs = obj.parentNode;
     var id =  objs.parentNode.children[0].innerHTML;
-    var itemVal = objs.parentNode.children[2].children[0].value;
-    var old_itemVal = objs.parentNode.children[2].children[0].alt;
+    var itemVal = objs.parentNode.children[3].children[0].value;
+    var old_itemVal = objs.parentNode.children[3].children[0].alt;
     var data = JSON.stringify({"id":id,"old_itemVal":old_itemVal,"itemVal":itemVal});
     $.ajax({
         url:"/update_name_server",
@@ -409,15 +410,127 @@ function add_user_page() {
 }
 
 function add_new_user() {
-
+    var user = $("#add_user_name")[0].value.trim();
+    var passwd_neo = $("#add_user_passwd_neo")[0].value.trim();
+    var passwd = $("#add_user_passwd_tow")[0].value.trim();
+    var channel_obj = $("#add_user_channle")[0];
+    var channel = channel_obj[channel_obj.selectedIndex].label;
+    var validation = $("#validationres");
+    var close_window = $('#close_window');
+    var data = JSON.stringify({"name":user,"passwd":$.md5(passwd),"channle":channel});
+    if(passwd_neo == passwd){
+        $.ajax({
+            url:"/add_new_user",
+            type:"POST",
+            dataType:"json",
+            data:data,
+            success:function (result) {
+                if (result.msg.redirectUrl !=undefined && result.msg.redirectUrl != null){
+                    window.location.href = result.msg.redirectUrl;
+                }
+                if(result.msgtype == 'error'){
+                    validation[0].style.visibility = "visible";
+                    close_window[0].style.visibility = 'visible';
+                    validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+                }
+                else {
+                    var rigth_from = parent.$('#right_form');
+                    rigth_from[0].src = '/get_all_user';
+                    validation[0].style.visibility = "visible";
+                    close_window[0].style.visibility = 'visible';
+                    validation.html('<p style="color: green; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">' + result.msg + '</p>');
+                }
+            },
+            error:function (result) {
+                validation[0].style.visibility ="visible";
+                close_window[0].style.visibility='visible';
+                validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">系统错误，请联系管理员！</p>');
+            }
+        });
+    }
+    else {
+        validation[0].style.visibility ="visible";
+        close_window[0].style.visibility='visible';
+        validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">两次密码输入不一致。</p>');
+    }
 }
 
-function delete_user() {
-
+function delete_user(obj) {
+    var validation = $("#validationres");
+    var close_window = $('#close_window');
+    var data_obj = obj.parentNode.parentNode.children[0];
+    var data = data_obj.textContent.trim();
+    $.ajax({
+        url: "/delete_old_user",
+        type: "POST",
+        dataType: "text",
+        data: data,
+        success: function (result) {
+                if (result.redirectUrl !=undefined && result.redirectUrl != null){
+                    window.location.href = result.msg.redirectUrl;
+                }
+                if(result.msgtype == 'error'){
+                    validation[0].style.visibility = "visible";
+                    close_window[0].style.visibility = 'visible';
+                    validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+                }
+                else {
+                    var rigth_from = parent.$('#right_form');
+                    rigth_from[0].src = '/get_all_user';
+                    validation[0].style.visibility ="visible";
+                    close_window[0].style.visibility='visible';
+                    validation.html('<p style="color: green; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+                }
+        },
+        error: function (result) {
+            validation[0].style.visibility ="visible";
+            close_window[0].style.visibility='visible';
+            validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">系统错误，请联系管理员！</p>');
+        }
+    });
 }
 
 function update_user_passwd() {
-
+    var validation = $("#validationres");
+    var close_window = $('#close_window');
+    var user = $("#update_user_name")[0].textContent.trim();
+    var old_passwd = $("#updae_user_old_passwd")[0].value.trim();;
+    var new_passwd_neo = $("#update_user_new_passwd_neo")[0].value.trim();;
+    var new_passwd_tow = $("#update_user_new_passwd_tow")[0].value.trim();
+    var data = JSON.stringify({"name":user,"old_passwd":$.md5(old_passwd),"passwd":$.md5(new_passwd_tow)});
+    if(new_passwd_neo == new_passwd_tow){
+        $.ajax({
+            url: "/update_old_user_passwd",
+            type: "POST",
+            dataType: "json",
+            data: data,
+            success: function (result) {
+                if (result.redirectUrl !=undefined && result.redirectUrl != null){
+                    window.location.href = result.redirectUrl;
+                }
+                if(result.msgtype == 'error'){
+                    validation[0].style.visibility ="visible";
+                    close_window[0].style.visibility='visible';
+                    validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+                }
+                else {
+                    validation[0].style.visibility ="visible";
+                    close_window[0].style.visibility='visible';
+                    validation.html('<p style="color: green; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">'+result.msg+'</p>');
+                }
+            },
+            error: function (result) {
+                validation[0].style.visibility ="visible";
+                close_window[0].style.visibility='visible';
+                validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">系统错误，请联系管理员！</p>');
+            }
+        });
+    }
+    else {
+        validation[0].style.visibility ="visible";
+        close_window[0].style.visibility='visible';
+        validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 26%">两次密码输入不一致。</p>');
+    }
 }
 
 function update_user_passwd_page() {
