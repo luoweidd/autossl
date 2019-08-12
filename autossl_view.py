@@ -8,6 +8,7 @@
  * User: devops
  * Date: 2019-06-03
  * Time: 下午2:01
+ * version: 1.0.1
 '''
 
 from flask import Flask,request,redirect,render_template,current_app,Response,url_for
