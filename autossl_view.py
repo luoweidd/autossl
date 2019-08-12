@@ -42,7 +42,7 @@ user_contrllor_obj = user_contrlor()
 
 @app.before_request
 def before_action():
-    if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1:
+    if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1 and request.path.find('pem') == -1 and request.path.find('privte.key') == -1:
         if request.path == '/forget_password':
             return render_template('forget_password.html')
         elif request.path != '/login' and request.path != '/':
@@ -331,7 +331,9 @@ def update_name_server_validation():
                     cert = validation_result
                     from contrllo.update_name_server_contrllo import update_name_server_contrllo
                     update_name_server_status = update_name_server_contrllo()
-                    kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domain":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
+                    #kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domain":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
+                    kwargs = {'Id': db_["id"], 'old_domain': db_["old_itemVal"], "new_domain": db_["itemVal"],
+                              "new_pem": cert[1], "new_key": cert[2],"request_host":request.url_root}
                     update_status = update_name_server_status.update_contrllor(kwargs)
                     log.info('update_status:  ---> %s',update_status)
                     if update_status == 'ok':

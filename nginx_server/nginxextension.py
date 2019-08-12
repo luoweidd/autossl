@@ -19,6 +19,7 @@ from base.mylog import loglog
 log = loglog.logger
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', 8782))
+client.settimeout(15)
 
 def recv():
     while True:
@@ -26,6 +27,7 @@ def recv():
             data =  client.recv(10240)
             if data != b'':
                 log.error('\n接收到新消息：“%s”'%data.decode('utf-8'))
+                return data
             else:
                 client.close()
                 log.error('\n服务连接断开！')
@@ -69,19 +71,19 @@ def heartbeat():
                 log.error(e)
 
 def data_send(data):
-    while True:
-        msg = data
-        if msg != None and msg != b'':
-            if msg != 'close':
-                try:
-                    msg = Message_Encapsulation(msg)
-                    client.sendall(msg)
-                except OSError as e:
-                    if e is object:
-                        for i in e:
-                            log.error(i)
-                    else:
-                        log.error(e)
+    msg = data
+    if msg != None and msg != b'':
+        if msg != 'close':
+            try:
+                msg = Message_Encapsulation(msg)
+                client.sendall(msg)
+                return True
+            except OSError as e:
+                if e is object:
+                    for i in e:
+                        log.error(i)
+                else:
+                    log.error(e)
 
 
 def Message_Encapsulation(msg):

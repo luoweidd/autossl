@@ -44,8 +44,8 @@ class ssl_cert_v2:
     revokeCert="revokeCert"
     keyChange="keyChange"
 
-    AccountKeyFile = '%s%scertificate%saccount.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag())
-    EmailAddresses = ['mailto:654622452@qq.com','mailto:69672452@qq.com']
+    AccountKeyFile = '%s%saccount%saccount.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag())
+    EmailAddresses = ['mailto:654642452@qq.com','mailto:69602452@qq.com']
 
     def get_directory(self):
         try:
@@ -262,8 +262,8 @@ class ssl_cert_v2:
         '''
         if domain != None:
             domain_dir = myhelper.DomainDewildcards(domain[0])
-            key_name = '%s%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
-            csr_name = '%s%scertificate%s%s%scertificate.csr'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+            key_name = '%s%sstatic%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+            csr_name = '%s%sstatic%scertificate%s%s%scertificate.csr'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
             import os
             if os.path.exists(csr_name) is False:
                 myhelper.create_domains_csr(key_name,csr_name,domain[0],self.EmailAddresses)
@@ -492,7 +492,7 @@ class ssl_cert_v2:
         if order_info != None:
             order_info = json.loads(order_info)
             domain = order_info["identifiers"][0]["value"]
-            csr_name = '%s%scertificate%s%s%scertificate.csr'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),myhelper.DomainDewildcards(domain),basemethod.systemc_dir_flag())
+            csr_name = '%s%sstatic%scertificate%s%s%scertificate.csr'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),myhelper.DomainDewildcards(domain),basemethod.systemc_dir_flag())
             csr = myhelper.load_csr_file(csr_name)
             new_accuount = self.get_directory()
             nonce = self.get_nonce(new_accuount[self.nonec_path])
@@ -545,8 +545,8 @@ class ssl_cert_v2:
                 return "本次申请状态已失效，请重新输入域名点击验证按钮"
             domain_name = cert_down['identifiers'][0]['value']
             domain_dir = myhelper.DomainDewildcards(domain_name)
-            certificate_name = '%s%scertificate%s%s%scertificate.pem'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
-            key_name = '%s%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+            certificate_name = '%s%sstatic%scertificate%s%s%scertificate.pem'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+            key_name = '%s%sstatic%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
 
             myhelper.wirte_ssl_certificate(certificate_name,resp.text)
             return [domain_name,certificate_name,key_name,resp.text]

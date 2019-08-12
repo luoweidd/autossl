@@ -13,7 +13,8 @@ from DBL._sys_config import sys_config
 from nginx_server.nginx_server import nginx_server
 from base.mylog import loglog
 from base.basemethod import url_extract_doain
-import re
+from nginx_server import nginxextension
+import re,threading
 
 class update_name_server_contrllo:
 
@@ -95,12 +96,41 @@ class update_name_server_contrllo:
         '''
         new_domain = url_extract_doain(kwargs['new_domain'])
         old_domain = url_extract_doain(kwargs['old_domain'])
-        nginx_update_status = self.nginx_config_options(old_domain,new_domain,kwargs["new_pem"],kwargs["new_key"])
-        self.log.info(nginx_update_status)
-        if nginx_update_status[0] == 0:
-            db_update_status = self.update_DB(kwargs['Id'],kwargs["new_domain"])
-            if db_update_status.modified_count > 0 or db_update_status.matched_count > 0:
-                return 'ok'
+        # nginx_update_status = self.nginx_config_options(old_domain,new_domain,kwargs["new_pem"],kwargs["new_key"])   #version v_1.0.x
+        from base.basemethod import systemc_dir_flag
+        if re.match('^.',new_domain):
+            ca_key_down_link = kwargs["request_host"]+'static/certificate/'+new_domain[1:]+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
+            privte_key_down_link = kwargs["request_host"]+'static/certificate/'+new_domain[1:]+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
+        else:
+            ca_key_down_link = ''+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
+            privte_key_down_link = ''+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
+        data = {"heard":"nginx_ssl_update","msg":{"old_domain":"*"+old_domain,"doamin":"*"+new_domain,"ca_key_down_link":ca_key_down_link,"privte_key_down_link":privte_key_down_link}} #version v_1.1.x
+        import json
+        try:
+            send_status = nginxextension.data_send(json.dumps(data))
+            if send_status is object:
+                for i in send_status:
+                    self.log.error(i)
             else:
-                return '数据未做任何修改！但执行成功。'
-        return nginx_update_status
+                self.log.error(send_status)
+            recv_res = nginxextension.recv()
+        except Exception as e:
+            if e is object:
+                for i in e:
+                    self.log.error(i)
+            else:
+                self.log.error(e)
+        self.log.info(recv_res)
+        recv_res = json.loads(recv_res)
+        try:
+            if recv_res["msg"]:
+                if recv_res["msg"][0] == 0:
+                    db_update_status = self.update_DB(kwargs['Id'],kwargs["new_domain"])
+                    if db_update_status.modified_count > 0 or db_update_status.matched_count > 0:
+                        return 'ok'
+                    else:
+                        return '数据未做任何修改！但执行成功。'
+            return recv_res
+        except KeyError:
+            self.log.error(recv_res["error"])
+            return recv_res["error"]
