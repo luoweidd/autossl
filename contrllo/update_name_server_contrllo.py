@@ -98,13 +98,21 @@ class update_name_server_contrllo:
         old_domain = url_extract_doain(kwargs['old_domain'])
         # nginx_update_status = self.nginx_config_options(old_domain,new_domain,kwargs["new_pem"],kwargs["new_key"])   #version v_1.0.x
         from base.basemethod import systemc_dir_flag
-        if re.match('^.',new_domain):
+        if re.match('^.',new_domain):  #匹配到是以.开头的域名，则为域名添加*号
             ca_key_down_link = kwargs["request_host"]+'static/certificate/'+new_domain[1:]+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
             privte_key_down_link = kwargs["request_host"]+'static/certificate/'+new_domain[1:]+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
+            new_domain = '*%s'%new_domain
+            old_domain = '*%s'%old_domain
         else:
             ca_key_down_link = ''+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
             privte_key_down_link = ''+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
-        data = {"heard":"nginx_ssl_update","msg":{"old_domain":"*"+old_domain,"doamin":"*"+new_domain,"ca_key_down_link":ca_key_down_link,"privte_key_down_link":privte_key_down_link}} #version v_1.1.x
+        #nginx配置客户端请求数据格式以及该接口字段要求
+        '''
+        heard：协议路由头
+        msg：消息解析所必要字段
+        msg-value：该路由请求必要字段[old_domain,domain,ca_key_down_link,privte_key_down_link]
+        '''
+        data = {"heard":"nginx_ssl_update","msg":{"old_domain":old_domain,"domain":new_domain,"ca_key_down_link":ca_key_down_link,"privte_key_down_link":privte_key_down_link}} #version v_1.1.x
         import json
         try:
             send_status = nginxextension.data_send(json.dumps(data))
@@ -115,6 +123,7 @@ class update_name_server_contrllo:
                 self.log.error(send_status)
             recv_res = nginxextension.recv()
         except Exception as e:
+            nginxextension.client.close()
             if e is object:
                 for i in e:
                     self.log.error(i)

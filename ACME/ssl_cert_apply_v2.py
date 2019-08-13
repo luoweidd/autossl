@@ -23,12 +23,12 @@ class ssl_cert_v2:
 
     logs = loglog()
     log = logs.logger
-    base_path_test = 'https://acme-staging-v02.api.letsencrypt.org/directory'
-    base_path = 'https://acme-v02.api.letsencrypt.org/directory'
+    base_path = 'https://acme-staging-v02.api.letsencrypt.org/directory'
+    #base_path = 'https://acme-v02.api.letsencrypt.org/directory'
 
     #request headers
     headers = {
-        'User-Agent': 'lw-ghy-acme-client/1.0',
+        'User-Agent': 'lw-ghy-acme-client/2.0',
         'Accept-Language': 'zh',
         'Content-Type':"application/jose+json"
     }
@@ -45,7 +45,7 @@ class ssl_cert_v2:
     keyChange="keyChange"
 
     AccountKeyFile = '%s%saccount%saccount.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag())
-    EmailAddresses = ['mailto:654642452@qq.com','mailto:69602452@qq.com']
+    EmailAddresses = ['mailto:232642452@126.com','mailto:23480038@qq.com']
 
     def get_directory(self):
         try:
@@ -148,12 +148,10 @@ class ssl_cert_v2:
             self.log.error(error)
 
         if resp.status_code < 200 or resp.status_code >= 300:
-            print (resp.reason)
             self.log.error('Error calling ACME endpoint:%s'%resp.reason)
             self.log.error('Status Code:%s'%resp.status_code)
         else:
             if 'Location' in resp.headers:
-                print
                 self.log.info('Account URL:%s'%resp.headers['Location'])
                 nonce = resp.headers[self.nonec]
                 account_url = resp.headers['Location']
