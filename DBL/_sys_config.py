@@ -37,18 +37,24 @@ class sys_config:
             self.log.error( "获取%s数据错误，错误消息：%s"%(self.collection,e))
 
     def server_list(self):
-        server_list_all = self.get_collection_all()
-        list_all = []
-        for i in server_list_all:
-            list_all.append(i)
-        return list_all
+        try:
+            server_list_all = self.get_collection_all()
+            list_all = []
+            for i in server_list_all:
+                list_all.append(i)
+            return list_all
+        except Exception as e:
+            self.log.error(e)
 
     def bychannle_server_list(self,channleid):
-        server_list_all = self.bychannelid_get_collection_all(channleid)
-        list_all = []
-        for i in server_list_all:
-            list_all.append(i)
-        return list_all
+        try:
+            server_list_all = self.bychannelid_get_collection_all(channleid)
+            list_all = []
+            for i in server_list_all:
+                list_all.append(i)
+            return list_all
+        except Exception as e:
+            self.log.error(e)
 
     def update_collection(self,Id,itemVal):
         try:

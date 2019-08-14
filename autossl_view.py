@@ -254,11 +254,17 @@ def server_name_list():
     for i in user_all:
         if user_name == "admin":
             sys = sys_obj.server_list()
-            return render_template('server_list_form.html',res=sys)
+            if sys is not None:
+                return render_template('server_list_form.html',res=sys)
+            else:
+                return '程序错误。'
         elif user_name == i["name"]:
             channleid = i["channle"]
             sys = sys_obj.bychannle_server_list(channleid)
-            return render_template('server_list_form.html',res=sys,time_struc=time_struc)
+            if sys is not None:
+                return render_template('server_list_form.html',res=sys,time_struc=time_struc)
+            else:
+                return '程序错误。'
     resutl = messge.getmsg(10)
     return json.dumps(resutl)
 
