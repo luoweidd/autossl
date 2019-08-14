@@ -225,7 +225,7 @@ def dns_query(domain):
 		for i in cname.response.answer:
 			for j in i.items:
 				return j.to_text()
-	except dns.resolver.NXDOMAIN as e:
+	except Exception as e:
 		log.error(e)
 
 def DomainDewildcards(domain):
