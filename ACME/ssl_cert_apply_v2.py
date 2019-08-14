@@ -50,14 +50,13 @@ class ssl_cert_v2:
     def get_directory(self):
         try:
             directorys = requests.get(self.base_path, headers=self.headers)
+            if directorys.status_code < 200 or directorys.status_code >= 300:
+                self.log.error('Error calling ACME endpoint:', directorys.reason)
+            else:
+                result = directorys.json()
+                return result
         except requests.exceptions.RequestException as error:
             self.log.error(error)
-
-        if directorys.status_code < 200 or directorys.status_code >= 300:
-            self.log.error('Error calling ACME endpoint:', directorys.reason)
-        else:
-            result = directorys.json()
-            return result
 
     def get_nonce(self,path):
         nonce = requests.head(path).headers[self.nonec]

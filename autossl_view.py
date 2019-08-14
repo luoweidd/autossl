@@ -344,13 +344,13 @@ def update_name_server_validation():
                         result = messge.getmsg(0)
                         result['msg'] = '数据未做任何修改！但执行成功。'
                         return json.dumps(result)
-                    elif update_status == '未读取到匹配的配置数据，请联系管理员检查。':
+                    elif update_status == 'Read error in original configuration.':
                         result = messge.getmsg(0)
-                        result['msg'] = '未读取到匹配的配置数据，请联系管理员检查。'
+                        result['msg'] = 'Read error in original configuration.'
                         return json.dumps(result)
-                    elif update_status == '配置检查不通过，请通知管理员检查配置文件，以及系统。':
+                    elif update_status == 'Configuration check failed. Please inform the administrator to check the configuration file and the system.':
                         result = messge.getmsg(0)
-                        result['msg'] = '配置检查不通过，请通知管理员检查配置文件，以及系统。'
+                        result['msg'] = 'Configuration check failed. Please inform the administrator to check the configuration file and the system.'
                         return json.dumps(result)
                     else:
                         remsg = messge.getmsg(10015)
