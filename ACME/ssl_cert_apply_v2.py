@@ -17,14 +17,15 @@ import os,time
 from base.mylog import loglog
 from base import basemethod
 from ACME import myhelper
+from base.basemethod import getDomain
 
 
 class ssl_cert_v2:
 
     logs = loglog()
     log = logs.logger
-    base_path = 'https://acme-staging-v02.api.letsencrypt.org/directory'
-    #base_path = 'https://acme-v02.api.letsencrypt.org/directory'
+    #base_path = 'https://acme-staging-v02.api.letsencrypt.org/directory'
+    base_path = 'https://acme-v02.api.letsencrypt.org/directory'
 
     #request headers
     headers = {
@@ -392,7 +393,7 @@ class ssl_cert_v2:
                     account_key = myhelper.get_jwk(self.AccountKeyFile)
                     keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
                     TXT = myhelper.b64(myhelper.hash_256_digest(keyAuthorization))
-                    name = self.join_Char(LABLE, domain_name)
+                    name = self.join_Char(LABLE, getDomain(domain_name))
                     return ["DNS 解析名称: %s 解析类型: TXT 解析值: %s <br> 等待解析生效，可用nslookup ——> set type=txt ———> %s 命令查看是否生效，如果查询值等于此处TXT值，即生效，即可点击验证执行证书下发。<br>" %(name,TXT,name),json.dumps(order_info),challenge["challenges"][0]["url"],TXT,name]
                 self.log.error("[Error]: DNS auth error, data request exception.")
             self.log.error('该域名请求次数过多，请更换域名申请。')
@@ -417,7 +418,7 @@ class ssl_cert_v2:
             challenge_domain = '_acme-challenge%s' % domain
         else:
             self.log.info(domain)
-            challenge_domain = '_acme-challenge.%s'% domain
+            challenge_domain = '_acme-challenge.%s'% getDomain(domain)
         self.log.info(challenge_domain)
         for i in range(1,60):
             dns_query = myhelper.dns_query(challenge_domain)
