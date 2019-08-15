@@ -23,6 +23,7 @@ from ACME.myhelper import hash_256_digest,b64
 from base.basemethod import url_extract_doain,getDomain
 from auth.user_model import user_modle
 from contrllo.user_contrllo import user_contrlor
+from contrllo.update_name_server_contrllo import update_name_server_contrllo
 import requests,time
 
 
@@ -183,24 +184,26 @@ def new_site_dns_validation():
         if auth_link != None:
             validation_result = ssl_v2.dns_validation(txt,domains,challeng_link,auth_link)
             if validation_result != None or validation_result != 'System error, please contact the system administrator!':
-                cert = validation_result
                 if type(validation_result) == list:
-                    nginx = nginx_server()
-                    log.info('%s\n%s\n%s\n'%(cert[0],cert[1],cert[2]))
-                    nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
-                    nginx_conf_ceck = nginx.nginx_conf_check()
-                    if nginx_conf_ceck[0] == 0:
-                        nginx_status = nginx.restart_nginx_to_effective()
-                        if nginx_status[0] == 0:
-                            result = messge.getmsg(0)
-                            result['msg'] = [cert[0],cert[1],cert[2]]
-                            return json.dumps(result)
-                        else:
-                            remsg = messge.getmsg(10016)
-                            return json.dumps(messge.msg(remsg))
+                    cert = validation_result
+                    # old key load local function
+                    # nginx = nginx_server()
+                    # log.info('%s\n%s\n%s\n'%(cert[0],cert[1],cert[2]))
+                    # nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
+                    # nginx_conf_ceck = nginx.nginx_conf_check()
+                    # if nginx_conf_ceck[0] == 0:
+                    #     nginx_status = nginx.restart_nginx_to_effective()
+                    nginx_contrllo = update_name_server_contrllo()
+                    request_host = request.url_root
+                    nginx_status = nginx_contrllo.new_conf_contrllo(cert[0],request_host)
+                    if nginx_status[0] == 0:
+                        result = messge.getmsg(0)
+                        result['msg'] = [cert[0],cert[1],cert[2]]
+                        return json.dumps(result)
                     else:
-                        remsg = messge.getmsg(10018)
-                        return json.dumps(messge.msg(remsg))
+                        remsg = messge.getmsg(12)
+                        remsg['msg'] = nginx_status
+                        return json.dumps(messge.msg(nginx_status))
                 else:
                     remsg = messge.getmsg(10015)
                     return json.dumps(messge.msg(remsg))
@@ -335,7 +338,6 @@ def update_name_server_validation():
                 validation_result = ssl_v2.dns_validation(txt, domain, challeng_link, auth_link)
                 if validation_result != None:
                     cert = validation_result
-                    from contrllo.update_name_server_contrllo import update_name_server_contrllo
                     update_name_server_status = update_name_server_contrllo()
                     #kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domain":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
                     kwargs = {'Id': db_["id"], 'old_domain': db_["old_itemVal"], "new_domain": db_["itemVal"],

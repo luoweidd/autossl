@@ -133,35 +133,38 @@ class ssl_cert_v2:
         dir_noce=self.get_directory()
         # Create the account request
         payload = {"termsOfServiceAgreed": True, "contact": self.EmailAddresses}
-        nonce=self.get_nonce(dir_noce[self.nonec_path])
+        try:
+            nonce=self.get_nonce(dir_noce[self.nonec_path])
+        except Exception:
+            nonce = self.get_nonce(dir_noce[self.nonec_path])
         self.check_account_key_file()
         jwk = myhelper.get_jwk(self.AccountKeyFile)
         body_top = {"alg": "RS256","jwk":jwk ,"url": dir_noce[self.account_path],"nonce": nonce}
         jose = self.data_packaging(payload,body_top)
         # Make the ACME request
+
         try:
             resp = requests.post(dir_noce[self.account_path], json=jose, headers=self.headers)
+            if resp.status_code < 200 or resp.status_code >= 300:
+                self.log.error('Error calling ACME endpoint:%s' % resp.reason)
+                self.log.error('Status Code:%s' % resp.status_code)
+            else:
+                if 'Location' in resp.headers:
+                    self.log.info('Account URL:%s' % resp.headers['Location'])
+                    nonce = resp.headers[self.nonec]
+                    account_url = resp.headers['Location']
+                    return nonce, account_url
+                else:
+                    self.log.info('INFO: Response headers did not contain the header "Location",Start new accounts.')
+                    self.new_account()
+                    self.get_account_url()
+                    self.log.info('INFO: The new account is created and returned to the account URL.')
+                    return "System error, please contact the system administrator!"
         except requests.exceptions.RequestException as error:
             resp = error.response
             self.log.error(resp)
         except Exception as error:
             self.log.error(error)
-
-        if resp.status_code < 200 or resp.status_code >= 300:
-            self.log.error('Error calling ACME endpoint:%s'%resp.reason)
-            self.log.error('Status Code:%s'%resp.status_code)
-        else:
-            if 'Location' in resp.headers:
-                self.log.info('Account URL:%s'%resp.headers['Location'])
-                nonce = resp.headers[self.nonec]
-                account_url = resp.headers['Location']
-                return nonce, account_url
-            else:
-                self.log.info('INFO: Response headers did not contain the header "Location",Start new accounts.')
-                self.new_account()
-                self.get_account_url()
-                self.log.info('INFO: The new account is created and returned to the account URL.')
-                return "System error, please contact the system administrator!"
 
     def get_account_info(self):
         '''
@@ -258,42 +261,43 @@ class ssl_cert_v2:
         :param domain: domain, type:list, But support a domain name
         :return: order info.
         '''
-        if domain != None:
-            domain_dir = myhelper.DomainDewildcards(domain[0])
-            key_name = '%s%sstatic%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
-            csr_name = '%s%sstatic%scertificate%s%s%scertificate.csr'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
-            import os
-            if os.path.exists(csr_name) is False:
-                myhelper.create_domains_csr(key_name,csr_name,domain[0],self.EmailAddresses)
-            domains = myhelper.get_domains_from_csr(csr_name)
-            # Create the account request
-            accounts = self.get_account_url()
-            dir = self.get_directory()
-            order_url = dir[self.order_path]
-            self.log.info("Request to the ACME server an order to validate domains.")
-            payload = {"identifiers": [{"type": "dns", "value": domain} for domain in domains]}
-            body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": dir[self.order_path]}
-            jose = self.data_packaging(payload,body_top)
-            # Make the ACME request
-            try:
+        try:
+            if domain != None:
+                domain_dir = myhelper.DomainDewildcards(domain[0])
+                key_name = '%s%sstatic%scertificate%s%s%sprivte.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+                csr_name = '%s%sstatic%scertificate%s%s%scertificate.csr'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag(),domain_dir,basemethod.systemc_dir_flag())
+                import os
+                if os.path.exists(csr_name) is False:
+                    myhelper.create_domains_csr(key_name,csr_name,domain[0],self.EmailAddresses)
+                domains = myhelper.get_domains_from_csr(csr_name)
+                # Create the account request
+                accounts = self.get_account_url()
+                dir = self.get_directory()
+                order_url = dir[self.order_path]
+                self.log.info("Request to the ACME server an order to validate domains.")
+                payload = {"identifiers": [{"type": "dns", "value": domain} for domain in domains]}
+                body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": dir[self.order_path]}
+                jose = self.data_packaging(payload,body_top)
+                # Make the ACME request
+
                 resp = requests.post(order_url, json=jose, headers=self.headers)
-            except requests.exceptions.RequestException as error:
-                resp = error.response
-                self.log.error(resp)
-            except Exception as error:
-                self.log.error(error)
-            if resp.status_code < 200 or resp.status_code >= 300:
-                if resp.status_code == 429:
-                    return "该域名请求次数过多，请更换域名申请。"
-                self.log.error('Error calling ACME endpoint:%s'%resp.reason)
-                self.log.error('Status Code:%s'%resp.status_code)
-                return "System error, please contact the system administrator!"
-            else:
-                # nonce = resp.headers[self.nonec]
-                if resp.status_code == 201:
-                    order_location = resp.headers['Location']
-                    return order_location
-            return 'create csr file  error'
+                if resp.status_code < 200 or resp.status_code >= 300:
+                    if resp.status_code == 429:
+                        return "该域名请求次数过多，请更换域名申请。"
+                    self.log.error('Error calling ACME endpoint:%s' % resp.reason)
+                    self.log.error('Status Code:%s' % resp.status_code)
+                    return "System error, please contact the system administrator!"
+                else:
+                    # nonce = resp.headers[self.nonec]
+                    if resp.status_code == 201:
+                        order_location = resp.headers['Location']
+                        return order_location
+                return 'create csr file  error'
+        except requests.exceptions.RequestException as error:
+            resp = error.response
+            self.log.error(resp)
+        except Exception as error:
+            self.log.error(error)
 
 
     def old_order(self):
@@ -301,27 +305,27 @@ class ssl_cert_v2:
         Abandoned or not yet implemented.
         :return:
         '''
-        accounts = self.get_account_url()
-        self.log.info("Request to the ACME server an order to validate domains.")
-        order_url = '%s/%s'%(accounts[1],self.account_order)
-        payload = {}
-        body_top = {"alg": "RS256", "kid": accounts[1], "nonce": accounts[0], "url": order_url}
-        jose = self.data_packaging(payload, body_top)
-        self.log.info("Request URL:%s"%order_url)
         try:
+            accounts = self.get_account_url()
+            self.log.info("Request to the ACME server an order to validate domains.")
+            order_url = '%s/%s' % (accounts[1], self.account_order)
+            payload = {}
+            body_top = {"alg": "RS256", "kid": accounts[1], "nonce": accounts[0], "url": order_url}
+            jose = self.data_packaging(payload, body_top)
+            self.log.info("Request URL:%s" % order_url)
             resp = requests.post(order_url,json=jose,headers=self.headers)
         except requests.exceptions.RequestException as error:
             resp = error.response
+            if resp.status_code < 200 or resp.status_code >= 300:
+                self.log.error('Error calling ACME endpoint:%s' % resp.reason)
+                self.log.error('Status Code:%s' % resp.status_code)
+                return "System error, please contact the system administrator!"
+            return resp
             self.log.error(resp)
             return error
         except Exception as error:
             self.log.error(error)
             return error
-        if resp.status_code < 200 or resp.status_code >= 300:
-            self.log.error('Error calling ACME endpoint:%s' % resp.reason)
-            self.log.error('Status Code:%s' % resp.status_code)
-            return "System error, please contact the system administrator!"
-        return resp
 
     def get_auth(self,order_info):
         '''
@@ -360,6 +364,12 @@ class ssl_cert_v2:
         '''
         try:
             resp = requests.get(auth_link[0], headers=self.headers)
+            if resp.status_code < 200 or resp.status_code >= 300:
+                self.log.error('Error calling ACME endpoint:%s' % resp.reason)
+                self.log.error('Status Code:%s' % resp.status_code)
+                return "System error, please contact the system administrator!"
+            get_challenges = json.loads(resp.text)
+            return get_challenges
         except requests.exceptions.RequestException as error:
             resp = error.response
             self.log.error(resp)
@@ -367,12 +377,7 @@ class ssl_cert_v2:
         except Exception as error:
             self.log.error(error)
             return None
-        if resp.status_code < 200 or resp.status_code >= 300:
-            self.log.error('Error calling ACME endpoint:%s'%resp.reason)
-            self.log.error('Status Code:%s'%resp.status_code)
-            return "System error, please contact the system administrator!"
-        get_challenges = json.loads(resp.text)
-        return get_challenges
+
 
     def join_Char(self,one,two):
         return "{0}.{1}".format(one, two)
@@ -393,7 +398,7 @@ class ssl_cert_v2:
                     account_key = myhelper.get_jwk(self.AccountKeyFile)
                     keyAuthorization = self.join_Char(token,myhelper.b64(myhelper.JWK_Thumbprint(account_key)))
                     TXT = myhelper.b64(myhelper.hash_256_digest(keyAuthorization))
-                    name = self.join_Char(LABLE, getDomain(domain_name))
+                    name = self.join_Char(LABLE, domain_name)
                     return ["DNS 解析名称: %s 解析类型: TXT 解析值: %s <br> 等待解析生效，可用nslookup ——> set type=txt ———> %s 命令查看是否生效，如果查询值等于此处TXT值，即生效，即可点击验证执行证书下发。<br>" %(name,TXT,name),json.dumps(order_info),challenge["challenges"][0]["url"],TXT,name]
                 self.log.error("[Error]: DNS auth error, data request exception.")
             self.log.error('该域名请求次数过多，请更换域名申请。')
@@ -418,7 +423,7 @@ class ssl_cert_v2:
             challenge_domain = '_acme-challenge%s' % domain
         else:
             self.log.info(domain)
-            challenge_domain = '_acme-challenge.%s'% getDomain(domain)
+            challenge_domain = '_acme-challenge.%s'% domain
         self.log.info(challenge_domain)
         for i in range(1,60):
             dns_query = myhelper.dns_query(challenge_domain)
@@ -453,33 +458,35 @@ class ssl_cert_v2:
         :param challenge_link: challenge link
         :return: challenge result.
         '''
-        if challenge_link != None:
-            new_accuount = self.get_directory()
-            nonce = self.get_nonce(new_accuount[self.nonec_path])
-            payload = {}
-            account_url = self.get_account_url()[1]
-            body_top = {"alg": "RS256","kid":account_url,"url": challenge_link,"nonce": nonce}
-            jose = self.data_packaging(payload,body_top)
-            try:
-                resp = requests.post(challenge_link,json=jose,headers=self.headers)
-                self.log.info(json.dumps(resp.text))
-            except requests.exceptions.RequestException as error:
-                resp = error.response
-                self.log.error(resp)
-                return None
-            except Exception as error:
-                self.log.error(error)
-                return None
+
+        try:
+            if challenge_link != None:
+                new_accuount = self.get_directory()
+                nonce = self.get_nonce(new_accuount[self.nonec_path])
+                payload = {}
+                account_url = self.get_account_url()[1]
+                body_top = {"alg": "RS256", "kid": account_url, "url": challenge_link, "nonce": nonce}
+                jose = self.data_packaging(payload, body_top)
+            resp = requests.post(challenge_link,json=jose,headers=self.headers)
             if resp.status_code < 200 or resp.status_code >= 300:
                 self.log.error('Error calling ACME endpoint:%s' % resp.reason)
                 self.log.error('Status Code:%s' % resp.status_code)
-                self.log.error("[ERROR] All info: %s"%json.dumps(resp.text))
+                self.log.error("[ERROR] All info: %s" % json.dumps(resp.text))
                 return "本次申请状态已失效，请重新输入域名点击提交按钮"
             if resp.status_code == 201:
                 order_location = resp.headers['Location']
                 return order_location
             return resp.text
-        return "System error, please contact the system administrator!"
+            return "System error, please contact the system administrator!"
+            self.log.info(json.dumps(resp.text))
+        except requests.exceptions.RequestException as error:
+            resp = error.response
+            self.log.error(resp)
+            return None
+        except Exception as error:
+            self.log.error(error)
+            return None
+
     
     def finalize(self,order_info):
         '''

@@ -14,13 +14,14 @@ from nginx_server.nginx_server import nginx_server
 from base.mylog import loglog
 from base.basemethod import url_extract_doain
 from nginx_server.nginxextension import socketclient
-import re,threading
+import re,json
 
 class update_name_server_contrllo:
 
     logs = loglog()
     log = logs.logger
 
+    # old local nginx config option function
     def nginx_config_options(self,old_domain,new_domain,new_pem,new_key):
         nginx_servers = nginx_server()
         nginx_config_paths = [nginx_server.conf_dir_1,nginx_servers.conf_dir_2]
@@ -87,6 +88,7 @@ class update_name_server_contrllo:
         db_ = sys_db.update_collection(Id,itemVal)
         return db_
 
+    # new network nginx config option function
     def update_contrllor(self,kwargs):
         '''
         Update the nginx configuration and restart the service for the new configuration to take effect.
@@ -113,25 +115,11 @@ class update_name_server_contrllo:
         msg-value：该路由请求必要字段[old_domain,domain,ca_key_down_link,privte_key_down_link]
         '''
         data = {"heard":"nginx_ssl_update","msg":{"old_domain":old_domain,"domain":new_domain,"ca_key_down_link":ca_key_down_link,"privte_key_down_link":privte_key_down_link}} #version v_1.1.x
-        client_res = self.send_client(kwargs,data)
+        recv_res = self.send_client(data)
+        client_res = self.updata_conf_update_db(kwargs,recv_res)
         return client_res
 
-    def send_client(self,kwargs,data):
-        import json
-        try:
-            socket_client = socketclient()
-            socket_client.data_send(json.dumps(data))
-            recv_res = socket_client.recv()
-            if recv_res == '服务连接断开':
-                socket_client.data_send(json.dumps(data))
-                recv_res = socket_client.recv()
-        except Exception as e:
-            socket_client.client.close()
-            if e is object:
-                for i in e:
-                    self.log.error(i)
-            else:
-                self.log.error(e)
+    def updata_conf_update_db(self,kwargs,recv_res):
         try:
             recv_res = json.loads(recv_res)
             if recv_res["msg"]:
@@ -148,3 +136,41 @@ class update_name_server_contrllo:
         except Exception as e:
             self.log.error(e)
             return e
+
+    #new network update nginx config send data function
+    def send_client(self,data):
+        try:
+            socket_client = socketclient()
+            socket_client.data_send(json.dumps(data))
+            recv_res = socket_client.recv()
+            if recv_res == '服务连接断开':
+                socket_client.data_send(json.dumps(data))
+                recv_res = socket_client.recv()
+            return recv_res
+        except Exception as e:
+            socket_client.client.close()
+            if e is object:
+                for i in e:
+                    self.log.error(i)
+            else:
+                self.log.error(e)
+
+    def new_conf_contrllo(self,domain,request_host):
+        new_domain = url_extract_doain(domain)
+        # nginx_update_status = self.nginx_config_options(old_domain,new_domain,kwargs["new_pem"],kwargs["new_key"])   #version v_1.0.x
+        from base.basemethod import systemc_dir_flag,getDomain
+        if re.match('^\.',new_domain):  #匹配到是以.开头的域名，则为域名添加*号
+            ca_key_down_link = request_host+'static/certificate/'+new_domain[1:]+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
+            privte_key_down_link = request_host+'static/certificate/'+new_domain[1:]+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
+            new_domain = '*%s'%new_domain
+        else:
+            ca_key_down_link = request_host+'static/certificate/'+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
+            privte_key_down_link = request_host+'static/certificate/'+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
+        data = {"heard": "new_nginx_conf",
+                "msg": {"domain": new_domain, "ca_key_down_link": ca_key_down_link,
+                        "privte_key_down_link": privte_key_down_link}}
+        recv_res = self.send_client(data)
+        try:
+            return json.loads(recv_res)["msg"]
+        except KeyError:
+            return json.loads(recv_res)["error"]
