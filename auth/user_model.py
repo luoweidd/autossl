@@ -67,6 +67,14 @@ class user_modle:
                 new_data.append(json.loads(i))
         return new_data
 
+    def get_user_channle(self,name):
+        user_list = self.read_user_data()
+        for i in user_list:
+            if name == 'admin':
+                return '0'
+            if name == i["name"]:
+                return i['channle']
+
     def delete_user(self,del_user):
         user_all = self.read_user_data()
         for i in user_all:
@@ -97,7 +105,9 @@ class user_modle:
 if os.path.exists(user_modle.file_path) is False:
     _name = "admin"
     _passwd = "fba5b21c21c0c82d29645532680d7a20"
+    #passwd: J0oIJ1%$2
     _channle = "admin"
+
     user = {"name": _name, "passwd": _passwd, "channle": _channle}
     user_modl = user_modle()
     user_modl.create_modle_data(json.dumps(user))

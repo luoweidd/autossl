@@ -57,3 +57,10 @@ class user_contrlor:
             if i not in user_list and i["channelId"] != 'admin':
                 user_list.append(i)
         return user_list
+
+    def all_channelId_LIST(self):
+        all_channleid =self.get_all_channelId()
+        all_channle = []
+        for i in all_channleid:
+            all_channle.append(i["channelId"])
+        return all_channle

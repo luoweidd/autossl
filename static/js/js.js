@@ -114,30 +114,30 @@ function new_site_dns_validation() {
     }
 }
 
-function loader() {
-    $.ajax({
-        url:"/account_info_api",
-        type:'GET',
-        dataType:'text',
-        beforeSend:function(){
-            var load = $("#loading");
-            load[0].style.visibility="visible";
-            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
-            },
-        success:function(result){
-            var load = $("#loading");
-            load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
-        },
-        messageerror:function (result) {
-            var load = $("#loading");
-            load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
-        }
-    });
-}
+// function loader() {
+//     $.ajax({
+//         url:"/account_info_api",
+//         type:'GET',
+//         dataType:'text',
+//         beforeSend:function(){
+//             var load = $("#loading");
+//             load[0].style.visibility="visible";
+//             $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+//             },
+//         success:function(result){
+//             var load = $("#loading");
+//             load[0].style.visibility="hidden";
+//             var res=JSON.parse(result);
+//             $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+//         },
+//         messageerror:function (result) {
+//             var load = $("#loading");
+//             load[0].style.visibility="hidden";
+//             var res=JSON.parse(result);
+//             $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+//         }
+//     });
+// }
 
 function MsgAnalysis(msg) {
     var li="<table class='account_info_tables'><H3>account infomation:</H3>"
@@ -205,6 +205,7 @@ function update_domain(obj){
     var itemVal = objs.parentNode.children[3].children[0].value;
     var old_itemVal = objs.parentNode.children[3].children[0].alt;
     var data = JSON.stringify({"id":id,"old_itemVal":old_itemVal,"itemVal":itemVal});
+    var channlename = objs.parentNode.children[2].innerHTML;
     $.ajax({
         url:"/update_name_server",
         type:'POST',
@@ -236,6 +237,7 @@ function update_domain(obj){
                     validations[0].alt = result.msg[2];
                     validations[0].label = result.msg[3];
                     validations[0].txt = result.msg[5];
+                    validations[0].channle = channlename;
                     console.log(validations[0].txt);
                 }
                 else {
@@ -259,8 +261,9 @@ function old_site_dns_validation() {
     var challenge = auth_link[0].alt.toString();
     var txt = auth_link[0].label.toString();
     var db_ = auth_link[0].txt;
+    var channle =auth_link[0].channle.toString();
     var domains = db_["itemVal"];
-    var data = JSON.stringify([domains,auth,challenge,txt,db_]);
+    var data = JSON.stringify([domains,auth,challenge,txt,db_,channle]);
     $.ajax({
         url:"/update_name_server_validation",
         type:'POST',
@@ -542,4 +545,57 @@ function getusername(){
     var login_username = parent.$("#login_user_name")[0];
     var username = $('#update_user_name')[0];
     username.textContent = login_username.textContent.trim();
+}
+
+function channle_client_host_page() {
+    var rigth_from = parent.$('#right_form');
+    rigth_from[0].src = '/channlehostinfo';
+}
+
+function update_channle_host(obj) {
+    var objs = obj.parentNode;
+    var channel =  objs.parentNode.children[0].innerHTML;
+    var client_address = objs.parentNode.children[1].children[0].value;
+    var data = JSON.stringify({"channel":channel,"client_address":client_address});
+        $.ajax({
+        url:"/updatechannleffhost",
+        type:'POST',
+        data:data,
+        dataType:'json',
+        beforeSend:function(){
+            var load = $("#loading");
+            load[0].style.visibility="visible";
+            $("#loading").html("<img style='margin-top: 26%' src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+            },
+        success:function(result){
+            // var res=JSON.parse(result);
+            if (result.redirectUrl !=undefined && result.redirectUrl != null){
+                parent.window.location.href = result.msg.redirectUrl;
+            }
+            else {
+                console.log(result)
+                var load = $("#loading");
+                load[0].style.visibility = "hidden";
+                var validation = $("#validationres");
+                validation[0].style.visibility = "visible";
+                validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 25%">' + result.msg[0] + '</p>');
+                var close_window = $('#close_window');
+                close_window[0].style.visibility = 'visible';
+                if (result.code <= 0) {
+                    validation[0].style.visibility = "visible";
+                    validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 25%">' + result.msg + '</p>');
+                }
+                else {
+                    validation[0].style.visibility = "visible";
+                    validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 25%">' + result.msg + '</p>');
+                }
+
+            }
+        },
+        messageerror:function (result) {
+            var res=JSON.parse(result);
+            validation[0].style.visibility = "visible";
+            validation.html('<p style="color: red; background-color: white; width: 400px; height: auto; margin: auto; opacity: 0.9; margin-top: 25%">' + result.msg + '</p>');
+        }
+    });
 }

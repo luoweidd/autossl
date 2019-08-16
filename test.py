@@ -269,3 +269,45 @@
 #     if i not in user_list and i["channelId"] != 'admin':
 #         user_list.append(i)
 # print(user_list)
+# from contrllo.update_name_server_contrllo import update_name_server_contrllo
+
+# kwargs = {'Id': '156',
+#           'old_domain': '.d54la.cn',
+#           'new_domain': '.d54la.cn',
+#           'new_pem': '/home/devops/文档/devops/autossl/static/certificate/d54la.cn/certificate.pem',
+#           'new_key': '/home/devops/文档/devops/autossl/static/certificate/d54la.cn/privte.key',
+#           'request_host': 'http://127.0.0.1:5000/',
+#           'channlename': '0'}
+#
+# contrllor = update_name_server_contrllo()
+# ll = contrllor.update_contrllor(kwargs)
+# print(ll)
+
+# bb = contrllor.new_conf_contrllo('*.d54la.cn','http://127.0.0.1:5000/')
+# print(bb)
+
+# lb = [{"channle": 0, "channle_Seal_proof_mainframe":'127.0.0.1', "channle_Seal_proof_port":8782},
+#       {"channle": 'shiyu002', "channle_Seal_proof_mainframe":'192.168.0.12', "channle_Seal_proof_port":8782},
+#       {"channle": 'shiyu003', "channle_Seal_proof_mainframe":'192.168.0.162', "channle_Seal_proof_port":8782},
+#       {"channle": 'shiyu005', "channle_Seal_proof_mainframe":'192.168.0.212', "channle_Seal_proof_port":8782},
+#       {"channle": 'shiyu001', "channle_Seal_proof_mainframe":'192.168.0.112', "channle_Seal_proof_port":8782},
+#       {"channle": 'shiyu004', "channle_Seal_proof_mainframe":'192.168.0.142', "channle_Seal_proof_port":8782}
+#       ]
+# lv = ['shiyu001','admin','shiyu003','shiyu008','shiyu007','shiyu009','shiyu0010','shiyu004','shiyu005','shiyu006','shiyu002']
+#
+# channle_list = []
+# channle_host_list = []
+# if 'admin' in lv:
+#     lv.remove('admin')
+#     lv.append(0)
+# for channle_host in lb:
+#     for channle in lv:
+#         if channle == channle_host["channle"]:
+#             channle_list.append(channle_host)
+#             lv.remove(channle)
+# not_host_channle_list = []
+# for i in lv:
+#     not_host_channle_list.append({"channle":i,"channle_Seal_proof_mainframe":'', "channle_Seal_proof_port":''})
+# channle_host_list = lb+not_host_channle_list
+# for b in channle_host_list:
+#     print(b)

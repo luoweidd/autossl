@@ -171,34 +171,33 @@ class ssl_cert_v2:
         Get account info
         :return: account info
         '''
-        self.check_account_key_file()
-        """ Get the Account Information """
-        accounts=self.get_account_url()
-        # Create the account request
-        if accounts != None:
-            payload = {}
-            body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": accounts[1]}
-            jose = self.data_packaging(payload,body_top)
-            try:
+        try:
+            self.check_account_key_file()
+            """ Get the Account Information """
+            accounts=self.get_account_url()
+            # Create the account request
+            if accounts != None:
+                payload = {}
+                body_top = {"alg": "RS256","kid": accounts[1],"nonce": accounts[0],"url": accounts[1]}
+                jose = self.data_packaging(payload,body_top)
                 resp = requests.post(accounts[1], json=jose, headers=self.headers)
-            except requests.exceptions.RequestException as error:
-                resp = error.response
-                self.log.error(resp)
-            except Exception as error:
-                self.log.error(error)
-
-            if resp.status_code < 200 or resp.status_code >= 300:
-                self.log.error('Error calling ACME endpoint:%s'%resp.reason)
-                self.log.error('Status Code:%s'%resp.status_code)
-                return "System error, please contact the system administrator!"
+                if resp.status_code < 200 or resp.status_code >= 300:
+                    self.log.error('Error calling ACME endpoint:%s' % resp.reason)
+                    self.log.error('Status Code:%s' % resp.status_code)
+                    return "System error, please contact the system administrator!"
+                else:
+                    info = json.loads(resp.text)
+                    # info["url"]=resp.url
+                    nonce = resp.headers[self.nonec]
+                    info["nonce"] = nonce
+                    return info
             else:
-                info = json.loads(resp.text)
-                # info["url"]=resp.url
-                nonce = resp.headers[self.nonec]
-                info["nonce"] = nonce
-                return info
-        else:
-            return "System error, please contact the system administrator!"
+                return "System error, please contact the system administrator!"
+        except requests.exceptions.RequestException as error:
+            resp = error.response
+            self.log.error(resp)
+        except Exception as error:
+            self.log.error(error)
 
     def account_deactivate(self):
         """ Call ACME API to Deactivate Account """
@@ -451,6 +450,7 @@ class ssl_cert_v2:
                     return None
             else:
                 return 'DNS validation failed.info：%s'%dns_query
+        time.sleep(1)
 
     def dns_challenge(self,challenge_link):
         '''

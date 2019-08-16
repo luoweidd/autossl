@@ -14,12 +14,16 @@ from nginx_server.nginx_server import nginx_server
 from base.mylog import loglog
 from base.basemethod import url_extract_doain
 from nginx_server.nginxextension import socketclient
+from channle.channle_modle import channlemodle
+from auth.auth_user import user
 import re,json
 
 class update_name_server_contrllo:
 
     logs = loglog()
     log = logs.logger
+    user_obj = user()
+    session = user_obj.session_main
 
     # old local nginx config option function
     def nginx_config_options(self,old_domain,new_domain,new_pem,new_key):
@@ -115,9 +119,14 @@ class update_name_server_contrllo:
         msg-value：该路由请求必要字段[old_domain,domain,ca_key_down_link,privte_key_down_link]
         '''
         data = {"heard":"nginx_ssl_update","msg":{"old_domain":old_domain,"domain":new_domain,"ca_key_down_link":ca_key_down_link,"privte_key_down_link":privte_key_down_link}} #version v_1.1.x
-        recv_res = self.send_client(data)
-        client_res = self.updata_conf_update_db(kwargs,recv_res)
-        return client_res
+        Channle = channlemodle()
+        client_address = (Channle.get_channle_addr(kwargs["channlename"]))
+        if client_address != None:
+            recv_res = self.send_client(client_address,data)
+            if  recv_res != '客户端不在线，请核实是否已停止。':
+                client_res = self.updata_conf_update_db(kwargs,recv_res)
+                return client_res
+        return '远程客户端主机配置不存在或远程主机客服端服务不在线，请检查渠道主机配置。'
 
     def updata_conf_update_db(self,kwargs,recv_res):
         try:
@@ -138,9 +147,15 @@ class update_name_server_contrllo:
             return e
 
     #new network update nginx config send data function
-    def send_client(self,data):
+    def send_client(self,args,data):
+        '''
+
+        :param args:client address <type>:tupel
+        :param data:
+        :return:
+        '''
         try:
-            socket_client = socketclient()
+            socket_client = socketclient(args)
             socket_client.data_send(json.dumps(data))
             recv_res = socket_client.recv()
             if recv_res == '服务连接断开':
@@ -148,7 +163,10 @@ class update_name_server_contrllo:
                 recv_res = socket_client.recv()
             return recv_res
         except Exception as e:
-            socket_client.client.close()
+            try:
+                socket_client.client.close()
+            except UnboundLocalError:
+                return '客户端不在线，请核实是否已停止。'
             if e is object:
                 for i in e:
                     self.log.error(i)
@@ -163,14 +181,27 @@ class update_name_server_contrllo:
             ca_key_down_link = request_host+'static/certificate/'+new_domain[1:]+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
             privte_key_down_link = request_host+'static/certificate/'+new_domain[1:]+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
             new_domain = '*%s'%new_domain
+        elif re.match('^\*\.',new_domain):
+            new_domain = new_domain[2:]
+            ca_key_down_link = request_host+'static/certificate/'+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
+            privte_key_down_link = request_host+'static/certificate/'+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
         else:
             ca_key_down_link = request_host+'static/certificate/'+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
             privte_key_down_link = request_host+'static/certificate/'+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
         data = {"heard": "new_nginx_conf",
                 "msg": {"domain": new_domain, "ca_key_down_link": ca_key_down_link,
                         "privte_key_down_link": privte_key_down_link}}
-        recv_res = self.send_client(data)
-        try:
-            return json.loads(recv_res)["msg"]
-        except KeyError:
-            return json.loads(recv_res)["error"]
+        from auth.user_model import user_modle
+        User = user_modle()
+        channle = User.get_user_channle(self.session.get('user'))
+        self.log.info('Getting the clients remote address through the current session ,now login user: %s'%channle)
+        Channle = channlemodle()
+        client_address = (Channle.get_channle_addr(channle))
+        if client_address != None:
+            recv_res = self.send_client(client_address, data)
+            if  recv_res != '客户端不在线，请核实是否已停止。':
+                try:
+                    return json.loads(recv_res)["msg"]
+                except KeyError:
+                    return json.loads(recv_res)["error"]
+        return '远程客户端主机配置不存在或远程主机客服端服务不在线，请检查渠道主机配置。'

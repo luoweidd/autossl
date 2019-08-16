@@ -149,7 +149,7 @@ body {
 .admin_user_hide_pane {
     visibility: hidden; background-color: darkseagreen; border-radius: 2px;
     position: absolute; top: 45px; right: 45px; z-index: 10002;
-    width: 130px; height: 65px; line-height: revert; text-align: center;
+    width: 130px; height: 85px; line-height: revert; text-align: center;
 }
 
 .ordinary_user_hide_pane {

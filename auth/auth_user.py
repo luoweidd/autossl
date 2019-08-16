@@ -41,7 +41,7 @@ class user:
         return '用户名密码不能为空。'
 
     def logout_clear(self):
-        resutl = self.session_main.pop("user")
+        resutl = self.session_main.pop('user')
         return resutl
 
 

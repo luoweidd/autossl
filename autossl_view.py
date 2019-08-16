@@ -24,6 +24,7 @@ from base.basemethod import url_extract_doain,getDomain
 from auth.user_model import user_modle
 from contrllo.user_contrllo import user_contrlor
 from contrllo.update_name_server_contrllo import update_name_server_contrllo
+from channle.channle_modle import channlemodle
 import requests,time
 
 
@@ -203,7 +204,7 @@ def new_site_dns_validation():
                     else:
                         remsg = messge.getmsg(12)
                         remsg['msg'] = nginx_status
-                        return json.dumps(messge.msg(nginx_status))
+                        return json.dumps(remsg)
                 else:
                     remsg = messge.getmsg(10015)
                     return json.dumps(messge.msg(remsg))
@@ -237,7 +238,7 @@ def get_Anti_seal_site_info():
 @app.route('/logout',methods=['POST'])
 def logout():
     if request.method == 'POST':
-        user = request.get_data().decode('utf-8').strip(' ')
+        # user = request.get_data().decode('utf-8').strip(' ')
         result = user_obj.logout_clear()
         remsg = messge.getmsg(0)
         remsg["msg"] = result
@@ -334,6 +335,7 @@ def update_name_server_validation():
             challeng_link = data[2]
             txt = data[3]
             db_ = data[4]
+            channlename = data[5]
             if auth_link != None:
                 validation_result = ssl_v2.dns_validation(txt, domain, challeng_link, auth_link)
                 if validation_result != None:
@@ -341,7 +343,7 @@ def update_name_server_validation():
                     update_name_server_status = update_name_server_contrllo()
                     #kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domain":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
                     kwargs = {'Id': db_["id"], 'old_domain': db_["old_itemVal"], "new_domain": db_["itemVal"],
-                              "new_pem": cert[1], "new_key": cert[2],"request_host":request.url_root}
+                              "new_pem": cert[1], "new_key": cert[2],"request_host":request.url_root,"channlename":channlename}
                     update_status = update_name_server_status.update_contrllor(kwargs)
                     log.info('update_status:  ---> %s',update_status)
                     if update_status == 'ok':
@@ -439,3 +441,53 @@ def get_all_user():
     user_list = user_contrllor_obj.get_all_user()
     log.info('%s'%user_list)
     return render_template('all_user_info.html',user_list = user_list)
+
+@permission
+@app.route('/channlehostinfo',methods=['POST','GET'])
+def channlehostinfo():
+    usercontrll = user_contrlor()
+    Channle = channlemodle()
+    channlefull = usercontrll.all_channelId_LIST()
+    channle_local_full = Channle.read_channle_data()
+    channle_list = []
+    channle_host_list = []
+    if 'admin' in channlefull:
+        channlefull.remove('admin')
+        channlefull.append(0)
+    for channle_host in channle_local_full:
+        for channle in channlefull:
+            if channle == channle_host["channle"]:
+                channle_list.append(channle_host)
+                channlefull.remove(channle)
+    for i in channlefull:
+        channle_host_list.append({"channle": i, "channle_Seal_proof_mainframe": '', "channle_Seal_proof_port": ''})
+    channle_host_list = channle_list + channle_host_list
+    return render_template('channlehostinfo.html',res=channle_host_list)
+
+@permission
+@app.route('/updatechannleffhost',methods=['POST'])
+def updatechannelhost():
+    data = request.get_data()
+    data = json.loads(data)
+    channle_client_address = data["client_address"].split(':')
+    channle_Seal_proof_mainframe = channle_client_address[0]
+    channle_Seal_proof_port = int(channle_client_address[1])
+    Channle = channlemodle(channle=data["channel"],channle_Seal_proof_mainframe=channle_Seal_proof_mainframe,channle_Seal_proof_port=channle_Seal_proof_port)
+    all_channle = Channle.all_channel_LIST()
+    if data["channel"] not in all_channle:
+        create = Channle.create_new_channle()
+        if create is True:
+            result = messge.getmsg(0)
+            result["msg"] = '添加成功'
+            return result
+        else:
+            result = messge.getmsg(10012)
+            return result
+    else:
+        update = Channle.update_host()
+        if update is True:
+            result = messge.getmsg(0)
+            result["msg"] = '更新成功'
+        else:
+            result = messge.getmsg(10012)
+        return result
