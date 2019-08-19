@@ -15,9 +15,12 @@
 
 from auth.user_model import user_modle
 from  DBL.tb_user import tb_user
+from base.mylog import loglog
+import json
 
 class user_contrlor:
 
+    log = loglog.logger
 
     def add_new_user(self,user_dict):
         user_contr = user_modle(user_dict["name"],user_dict["passwd"],user_dict["channle"])
@@ -54,8 +57,9 @@ class user_contrlor:
         user = user_.get_all_channle()
         user_list = []
         for i in user:
-            if i not in user_list and i["channelId"] != 'admin':
-                user_list.append(i)
+            if i :
+                if i not in user_list and i["channelId"] != 'admin':
+                    user_list.append(i)
         return user_list
 
     def all_channelId_LIST(self):
