@@ -46,8 +46,10 @@ class ssl_cert_v2:
     keyChange="keyChange"
 
     AccountKeyFile = '%s%saccount%saccount.key'%(basemethod.get_root_path(),basemethod.systemc_dir_flag(),basemethod.systemc_dir_flag())
-    EmailAddresses = ['mailto:232642452@126.com','mailto:23480038@qq.com']
-
+    #local conf
+    #EmailAddresses = ['mailto:232642452@126.com','mailto:23480038@qq.com']
+    #online conf
+    EmailAddresses = ['mailto:typkhllnmu619@qq.com','jeak_2003_@hotmail.com']
     def get_directory(self):
         try:
             directorys = requests.get(self.base_path, headers=self.headers)
