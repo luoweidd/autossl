@@ -54,7 +54,7 @@ def before_action():
             if 'user' not in session:
                 #session['newurl']=request.path
                 if request.method == 'GET':
-                    return redirect(url_for('login_login', _scheme="http", _external=True)) #生产环境中,如果部署了https站反向代理，需修改"_scheme"值="https"，且在代理配置中需加入——scheme配置
+                    return redirect(url_for('login_login', _scheme="https", _external=True)) #生产环境中,如果部署了https站反向代理，需修改"_scheme"值="https"，且在代理配置中需加入——scheme配置
                 result = messge.getmsg(10013)
                 result.update({"redirectUrl":'/login'})
                 return json.dumps(result)

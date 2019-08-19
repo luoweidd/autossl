@@ -114,30 +114,30 @@ function new_site_dns_validation() {
     }
 }
 
-// function loader() {
-//     $.ajax({
-//         url:"/account_info_api",
-//         type:'GET',
-//         dataType:'text',
-//         beforeSend:function(){
-//             var load = $("#loading");
-//             load[0].style.visibility="visible";
-//             $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
-//             },
-//         success:function(result){
-//             var load = $("#loading");
-//             load[0].style.visibility="hidden";
-//             var res=JSON.parse(result);
-//             $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
-//         },
-//         messageerror:function (result) {
-//             var load = $("#loading");
-//             load[0].style.visibility="hidden";
-//             var res=JSON.parse(result);
-//             $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
-//         }
-//     });
-// }
+function loader() {
+    $.ajax({
+        url:"/account_info_api",
+        type:'GET',
+        dataType:'text',
+        beforeSend:function(){
+            var load = $("#loading");
+            load[0].style.visibility="visible";
+            $("#loading").html("<img src='static/images/loading.gif' />"); //在请求后台数据之前显示loading图标
+            },
+        success:function(result){
+            var load = $("#loading");
+            load[0].style.visibility="hidden";
+            var res=JSON.parse(result);
+            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+        },
+        messageerror:function (result) {
+            var load = $("#loading");
+            load[0].style.visibility="hidden";
+            var res=JSON.parse(result);
+            $("#letf_form").contents().find("#letf_form_div").html(MsgAnalysis(res.msg));
+        }
+    });
+}
 
 function MsgAnalysis(msg) {
     var li="<table class='account_info_tables'><H3>account infomation:</H3>"
