@@ -322,7 +322,9 @@ function close_windows(){
     var obj = $('#validationres');
     obj[0].style.visibility='hidden';
     var auth_buttom = $("#dns_validation");
-    auth_buttom[0].style.visibility = "hidden";
+    if (auth_buttom[0]){
+        auth_buttom[0].style.visibility = "hidden";
+    }
 }
 function forget_password(){
      window.location.href = '/forget_password'
