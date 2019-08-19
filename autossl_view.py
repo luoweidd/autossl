@@ -52,6 +52,8 @@ def before_action():
             log.info(request.url)
             log.info(session.get('user'))
             if 'user' not in session:
+                log.info('user not login return login page.')
+                log.info('requests method:%s'%request.method)
                 #session['newurl']=request.path
                 if request.method == 'GET':
                     return redirect(url_for('login_login', _scheme="https", _external=True)) #生产环境中,如果部署了https站反向代理，需修改"_scheme"值="https"，且在代理配置中需加入——scheme配置
@@ -61,7 +63,7 @@ def before_action():
             elif request.cookies.get(session['user']) != session['cookie']:
                 session['newurl']=request.path
                 if request.method == 'GET':
-                    return redirect(url_for('login_login', _scheme="http", _external=True))
+                    return redirect(url_for('login_login', _scheme="https", _external=True))
 
 def permission(function):
     def _permission(**kwargs):
@@ -111,7 +113,7 @@ def sslfrom():
     return render_template('applyform.html',user=session['user'],time_struc=time_struc)
 
 
-@app.route('/applyssl',methods=['POST','GET'])
+@app.route('/applyssl',methods=['POST'])
 def applyssl():
     if request.method =='POST':
         data = request.get_data()
@@ -277,39 +279,33 @@ def server_name_list():
 def update_name_server():
     if request.method == 'POST':
         data = request.get_data()
-        url = request.host_url
         try:
             data = json.loads(data)
             if data["id"] or data["itemVal"]:
                 itemVal = url_extract_doain(data['itemVal'])
                 itemVal = getDomain(itemVal)
                 if itemVal != None:
-                    domain = '*.%s' % (itemVal)
-                    try:
-                        resp = requests.post('%sapplyssl'%url,domain)
-                    except requests.RequestException as e:
-                        log.error(e)
-                        result = messge.getmsg(10013)
-                        result["msg"] = "System error, please contact the system administrator!"
-                        return json.dumps(result)
-                    except Exception as  e:
-                        log.error(e)
-                        result = messge.getmsg(10013)
-                        result["msg"] = "System error, please contact the system administrator!"
-                        return json.dumps(result)
-                    if resp.status_code < 200 or resp.status_code >= 300:
-                        log.error('Error requst applyssl endpoint:%s' % resp.reason)
-                        log.error('Status Code:%s' % resp.status_code)
-                        result = messge.getmsg(10013)
-                        result["msg"] = "System error, please contact the system administrator!"
-                        return json.dumps(result)
-                    else:
-                        result = messge.getmsg(0)
-                        res = json.loads(resp.text)
-                        res = res["msg"]
-                        res.append(data)
-                        result["msg"] = res
-                        return json.dumps(result)
+                    domains = ['*.%s' % (itemVal)]
+                    ssl_Cert = ssl_cert_v2()
+                    order = ssl_Cert.new_order(domains)
+                    if order != None:
+                        get_auth = ssl_Cert.get_auth(order)
+                        get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
+                        if get_dns_auth != None:
+                            result = messge.getmsg(0)
+                            res = get_dns_auth
+                            res.append(data)
+                            result['msg'] = res
+                            return json.dumps(result)
+                        elif get_dns_auth == 'System error, please contact the system administrator!':
+                            result = messge.getmsg(10012)
+                            return json.dumps(messge.msg(result))
+                        elif get_dns_auth == "该域名请求次数过多，请更换域名申请。":
+                            result = messge.getmsg(10017)
+                            return json.dumps(messge.msg(result))
+                        else:
+                            remsg = messge.getmsg(10015)
+                            return json.dumps(messge.msg(remsg))
                 else:
                     log.error('域名输入错误：%s'%itemVal)
                     result =messge.getmsg(10019)
@@ -317,6 +313,7 @@ def update_name_server():
         except Exception as e:
             log.error(e)
             result = messge.getmsg(10017)
+            result['msg'] = e
             return json.dumps(result)
     result = messge.getmsg(10011)
     return json.dumps(result)
