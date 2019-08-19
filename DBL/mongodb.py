@@ -20,8 +20,10 @@ class mongoDB:
         self.database = 'red_package_admin'
         self.db_user = 'root'
         self.db_passwd = 'WERteol367765'
-        self._connect_str = 'mongodb://127.0.0.1:27017/%s?authSource=%s' % (self.database, self.database)
-        #'mongodb://%s:%s@127.0.0.1:27017/%s?authSource='%s' % (self.db_user,self.db_passwd,self.database, self.database)
+        #本地测试数据库
+        #self._connect_str = 'mongodb://127.0.0.1:27017/%s?authSource=%s' % (self.database, self.database)
+        #线上数据库
+        'mongodb://%s:%s@127.0.0.1:27017/%s?authSource=%s' % (self.db_user,self.db_passwd,self.database, self.database)
 
     def DBConect(self):
         try:
