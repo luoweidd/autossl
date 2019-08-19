@@ -364,6 +364,7 @@ def update_name_server_validation():
                         return json.dumps(result)
                     else:
                         remsg = messge.getmsg(10015)
+                        remsg["msg"] = update_status
                         return json.dumps(remsg)
                 else:
                     result = messge.getmsg(10015)
