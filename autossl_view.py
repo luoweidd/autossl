@@ -44,7 +44,7 @@ user_contrllor_obj = user_contrlor()
 
 @app.before_request
 def before_action():
-    if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1 and request.path.find('pem') == -1 and request.path.find('privte.key') == -1:
+    if request.path.find('.ico') == -1 and request.path.find('.js') ==-1 and request.path.find('.css') == -1 and request.path.find('.pem') == -1 and request.path.find('.key') == -1:
         if request.path == '/forget_password':
             return render_template('forget_password.html')
         elif request.path != '/login' and request.path != '/':
@@ -199,7 +199,7 @@ def new_site_dns_validation():
                     nginx_contrllo = update_name_server_contrllo()
                     request_host = request.url_root
                     nginx_status = nginx_contrllo.new_conf_contrllo(cert[0],request_host)
-                    if nginx_status[0] == 0:
+                    if nginx_status == 0:
                         result = messge.getmsg(0)
                         result['msg'] = [cert[0],cert[1],cert[2]]
                         return json.dumps(result)
