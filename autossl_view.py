@@ -198,7 +198,7 @@ def new_site_dns_validation():
                     # if nginx_conf_ceck[0] == 0:
                     #     nginx_status = nginx.restart_nginx_to_effective()
                     nginx_contrllo = update_name_server_contrllo()
-                    request_host = request.host
+                    request_host = request.url_root
                     request_proto = request.scheme
                     nginx_status = nginx_contrllo.new_conf_contrllo(cert[0],request_proto,request_host)
                     if nginx_status[0] == 0:
@@ -342,7 +342,7 @@ def update_name_server_validation():
                     update_name_server_status = update_name_server_contrllo()
                     #kwargs = {'Id':db_["id"],'old_domain':db_["old_itemVal"],"new_domain":db_["itemVal"],"new_pem":cert[1],"new_key":cert[2]}
                     kwargs = {'Id': db_["id"], 'old_domain': db_["old_itemVal"], "new_domain": db_["itemVal"],
-                              "new_pem": cert[1], "new_key": cert[2],"request_proto":request.scheme,"request_host":request.host,"channlename":channlename}
+                              "new_pem": cert[1], "new_key": cert[2],"request_host":request.url_root,"channlename":channlename}
                     update_status = update_name_server_status.update_contrllor(kwargs)
                     log.info('update_status:  ---> %s',update_status)
                     if update_status == 'ok':
