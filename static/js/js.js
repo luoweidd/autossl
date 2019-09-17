@@ -310,8 +310,8 @@ function old_site_dns_validation() {
         error:function (result) {
             var load = $("#loading");
             load[0].style.visibility="hidden";
-            var res=JSON.parse(result);
-            $('.validationres').text(res.msg);
+            //var res=JSON.parse(result);
+            $('.validationres').text(result.msg);
         }
     });
 }
