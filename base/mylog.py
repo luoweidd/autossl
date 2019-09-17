@@ -33,12 +33,12 @@ class loglog:
     chlr = logging.StreamHandler()  # 输出到控制台的handler
     chlr.setFormatter(formatter)
     # chlr.setLevel('INFO')  # 也可以不设置，不设置就默认用logger的level
-    sizecut = logging.handlers.RotatingFileHandler(filename=logfilename,mode=0o777,maxBytes=10485760*5,backupCount=100)
-    datacut = logging.handlers.TimedRotatingFileHandler(filename=logfilename, when='MIDNIGHT', interval=1, backupCount=100, atTime=datetime.time(0, 0, 0, 0))
+    #sizecut = logging.handlers.RotatingFileHandler(filename=logfilename,mode=0o777,maxBytes=10485760*5,backupCount=100)
+    #datacut = logging.handlers.TimedRotatingFileHandler(filename=logfilename, when='MIDNIGHT', interval=1, backupCount=100, atTime=datetime.time(0, 0, 0, 0))
     fhlr = logging.FileHandler(logfilename)  # 输出到文件的handler
     fhlr.setFormatter(formatter)
     logger.addHandler(chlr)
     logger.addHandler(fhlr)
-    logger.addHandler(sizecut)
-    logger.addHandler(datacut)
+    #logger.addHandler(sizecut)
+    #logger.addHandler(datacut)
 
