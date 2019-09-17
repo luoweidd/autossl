@@ -293,7 +293,7 @@ def update_name_server():
                     if order != None:
                         get_auth = ssl_Cert.get_auth(order)
                         get_dns_auth = ssl_Cert.dns_auth_info(get_auth)
-                        if get_dns_auth != None and type(get_dns_auth) != list:
+                        if get_dns_auth != None and type(get_dns_auth) == list:
                             result = messge.getmsg(0)
                             res = get_dns_auth
                             res.append(data)
