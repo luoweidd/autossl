@@ -198,8 +198,7 @@ def new_site_dns_validation():
                 #     nginx_status = nginx.restart_nginx_to_effective()
                 nginx_contrllo = update_name_server_contrllo()
                 request_host = request.url_root
-                request_proto = request.scheme
-                nginx_status = nginx_contrllo.new_conf_contrllo(cert[0],request_proto,request_host)
+                nginx_status = nginx_contrllo.new_conf_contrllo(cert[0],request_host)
                 if nginx_status[0] == 0:
                     result = messge.getmsg(0)
                     result['msg'] = [cert[0],cert[1],cert[2]]

@@ -173,21 +173,21 @@ class update_name_server_contrllo:
             else:
                 self.log.error(e)
 
-    def new_conf_contrllo(self,domain,request_proto,request_host):
+    def new_conf_contrllo(self,domain,request_host):
         new_domain = url_extract_doain(domain)
         # nginx_update_status = self.nginx_config_options(old_domain,new_domain,kwargs["new_pem"],kwargs["new_key"])   #version v_1.0.x
         from base.basemethod import systemc_dir_flag,getDomain
         if re.match('^\.',new_domain):  #匹配到是以.开头的域名，则为域名添加*号
-            ca_key_down_link = request_proto+'://'+request_host+'/static/certificate/'+new_domain[1:]+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
-            privte_key_down_link = request_proto+'://'+request_host+'/static/certificate/'+new_domain[1:]+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
+            ca_key_down_link = request_host+'/static/certificate/'+new_domain[1:]+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
+            privte_key_down_link = request_host+'/static/certificate/'+new_domain[1:]+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
             new_domain = '*%s'%new_domain
         elif re.match('^\*\.',new_domain):
             new_domain = new_domain[2:]
-            ca_key_down_link = request_proto+'://'+request_host+'/static/certificate/'+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
-            privte_key_down_link = request_proto+'://'+request_host+'/static/certificate/'+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
+            ca_key_down_link = request_host+'/static/certificate/'+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
+            privte_key_down_link = request_host+'/static/certificate/'+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
         else:
-            ca_key_down_link = request_proto+'://'+request_host+'/static/certificate/'+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
-            privte_key_down_link = request_proto+'://'+request_host+'/static/certificate/'+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
+            ca_key_down_link = request_host+'/static/certificate/'+new_domain+ systemc_dir_flag()+'certificate.pem' #version v_1.1.x
+            privte_key_down_link = request_host+'/static/certificate/'+new_domain+ systemc_dir_flag()+ 'privte.key' #version v_1.1.x
         data = {"heard": "new_nginx_conf",
                 "msg": {"domain": new_domain, "ca_key_down_link": ca_key_down_link,
                         "privte_key_down_link": privte_key_down_link}}
