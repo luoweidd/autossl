@@ -187,7 +187,7 @@ def new_site_dns_validation():
         txt = data[3]
         if auth_link != None:
             validation_result = ssl_v2.dns_validation(txt,domains,challeng_link,auth_link)
-            if type(validation_result) == list:
+            if type(validation_result) == list or type(validation_result) == dict:
                 cert = validation_result
                 # old key load local function
                 # nginx = nginx_server()
