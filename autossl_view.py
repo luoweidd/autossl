@@ -187,35 +187,30 @@ def new_site_dns_validation():
         txt = data[3]
         if auth_link != None:
             validation_result = ssl_v2.dns_validation(txt,domains,challeng_link,auth_link)
-            if validation_result != None or validation_result != 'System error, please contact the system administrator!':
-                if type(validation_result) == list:
-                    cert = validation_result
-                    # old key load local function
-                    # nginx = nginx_server()
-                    # log.info('%s\n%s\n%s\n'%(cert[0],cert[1],cert[2]))
-                    # nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
-                    # nginx_conf_ceck = nginx.nginx_conf_check()
-                    # if nginx_conf_ceck[0] == 0:
-                    #     nginx_status = nginx.restart_nginx_to_effective()
-                    nginx_contrllo = update_name_server_contrllo()
-                    request_host = request.url_root
-                    request_proto = request.scheme
-                    nginx_status = nginx_contrllo.new_conf_contrllo(cert[0],request_proto,request_host)
-                    if nginx_status[0] == 0:
-                        result = messge.getmsg(0)
-                        result['msg'] = [cert[0],cert[1],cert[2]]
-                        return json.dumps(result)
-                    else:
-                        remsg = messge.getmsg(12)
-                        remsg['msg'] = nginx_status
-                        return json.dumps(remsg)
+            if type(validation_result) == list:
+                cert = validation_result
+                # old key load local function
+                # nginx = nginx_server()
+                # log.info('%s\n%s\n%s\n'%(cert[0],cert[1],cert[2]))
+                # nginx.add_Anti_seal_conf(cert[0],cert[1],cert[2])
+                # nginx_conf_ceck = nginx.nginx_conf_check()
+                # if nginx_conf_ceck[0] == 0:
+                #     nginx_status = nginx.restart_nginx_to_effective()
+                nginx_contrllo = update_name_server_contrllo()
+                request_host = request.url_root
+                request_proto = request.scheme
+                nginx_status = nginx_contrllo.new_conf_contrllo(cert[0],request_proto,request_host)
+                if nginx_status[0] == 0:
+                    result = messge.getmsg(0)
+                    result['msg'] = [cert[0],cert[1],cert[2]]
+                    return json.dumps(result)
                 else:
-                    remsg = messge.getmsg(10015)
-                    return json.dumps(messge.msg(remsg))
+                    remsg = messge.getmsg(12)
+                    remsg['msg'] = nginx_status
+                    return json.dumps(remsg)
             else:
-                result = messge.getmsg(10015)
-                result['msg'] =validation_result
-                return json.dumps(result)
+                remsg = messge.getmsg(10015)
+                return json.dumps(messge.msg(remsg))
         else:
             remsg = messge.getmsg(10015)
             return json.dumps(messge.msg(remsg))
