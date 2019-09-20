@@ -32,7 +32,7 @@
 
 包内没有使用虚拟环境部署方式，这里仅提供程序源码包。
 项目第三方依赖（其余全部基于Python内建包）：
-	可以运行在Python2.7以上，但是在Python3.X以上包内有一项依赖必须下载pydns源码安装到你的Python系统换进中，也就是：“site-packages”目录下。
+	可以运行在Python2.7以上，但是在Python3.X以上包内有一项依赖必须下载pydns源码安装到你的Python系统换进中，也就是：“site-packages”目录下。本项目venv目录内有，可直接下载，目录内该包名称：dns
 	flask（当然运行的最基本要求，flask web框架）
 	pyopenssl
 	pymongo（这里使用的是mongodb，当然你可以重写数据写入模块使用其它数据库）
