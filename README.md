@@ -35,12 +35,12 @@
 
 #### 效果图
 登录效果
-![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920095545.png)
+![Image text](https://gitee.com/luowei_lv/autossl/raw/master/static/images/img/QQ截图20190920095545.png)
 新申请SSL证书（支持输入原有域名刷新证书）
-![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920095624.png)
+![Image text](https://gitee.com/luowei_lv/autossl/raw/master/static/images/img/QQ截图20190920095624.png)
 刷新已存储域名SSL证书（可更换相应域名）
-![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920095851.png)
+![Image text](https://gitee.com/luowei_lv/autossl/raw/master/static/images/img/QQ截图20190920095851.png)
 添加用户
-![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920095915.png)
+![Image text](https://gitee.com/luowei_lv/autossl/raw/master/static/images/img/QQ截图20190920095915.png)
 修改渠道信息
-![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920100014.png)
+![Image text](https://gitee.com/luowei_lv/autossl/raw/master/static/images/img/QQ截图20190920100014.png)
