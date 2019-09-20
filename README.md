@@ -1,12 +1,15 @@
 # autossl
-
-#### 介绍
-{**以下是码云平台说明，您可以替换此简介**
-码云是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用码云实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
-
+********````````
+#### 功能介绍
+主要量大模块：
+    1.新申请（刷新）SSL证书(证书有效期90天)，同时新建nginx配置文件，默认http代理8090端口；
+    2.根据mongodb中存储域名进行服务中已有域名SSL证书更新，如果没有找到相关配置文件则新建配置（仅做了nginx配置支持），在更新配置是需要
+    autossl_client（[本仓库](https://gitee.com/luowei_lv)中下载:[autossl_client](https://gitee.com/luowei_lv/autossl_client)）的支持。同时需要在渠道配置中添加可用渠道主机IP端口（分布式管理，
+    主服务端可无须部署到业务主机，可主服务一对多管理。渠道信息记录在channal.dat以json格式存储，未做二进制序列化，同时用户管理也是以json格式未未二进制
+    序列化，所以请注意目录文件安全。）方可执行，当客户端主机nginx配置检查不通过不会应用生效。其它细节就不一一赘述了。敬请体验。如有需要解答，请加QQ：3245554
+    或邮件：[jeak_2003_@hotmail.com](mailto:jeak_2003_@hotmail.com).
 #### 软件架构
-给予flask web框架开发，请求第三方ACME官方接口申请pem格式SSL证书，但目前仅实现，且将来也只会有DNS验证方式。所以在验证域名所有的方式必须为DNS验证，这样的话就必须有域名管理账户所有权才能够申请到SSL证书。
+基于flask web框架开发，请求第三方ACME官方接口申请pem格式SSL证书，但目前仅实现，且将来也只会有DNS验证方式。所以在验证域名所有的方式必须为DNS验证，这样的话就必须有域名管理账户所有权才能够申请到SSL证书。
 
 
 #### 安装教程
@@ -30,19 +33,14 @@
 	pydns （目前在Python3.X以上支持有一些小问题，目前我的运行方式是使用的pydns2.X版本的源码安装到我的Python3.X环境中的。运行起来貌似没有什么问题。）
 	pyCrypto
 
-#### 参与贡献
-
-1. Fork 本仓库
-2. 新建 Feat_xxx 分支
-3. 提交代码
-4. 新建 Pull Request
-
-
-#### 码云特技
-
-1. 使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2. 码云官方博客 [blog.gitee.com](https://blog.gitee.com)
-3. 你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解码云上的优秀开源项目
-4. [GVP](https://gitee.com/gvp) 全称是码云最有价值开源项目，是码云综合评定出的优秀开源项目
-5. 码云官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6. 码云封面人物是一档用来展示码云会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#### 效果图
+登录效果
+![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920095545.png)
+新申请SSL证书（支持输入原有域名刷新证书）
+![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920095624.png)
+刷新已存储域名SSL证书（可更换相应域名）
+![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920095851.png)
+添加用户
+![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920095915.png)
+修改渠道信息
+![Image text](https://gitee.com/luowei_lv/autossl/blob/master/static/images/img/QQ截图20190920100014.png)
